@@ -1,7 +1,6 @@
 /**
  * Stashwise – API proxy server
  * Keeps Anthropic + ElevenLabs keys server-side only.
- * Deploy on Render (free tier) – see DEPLOY.md
  */
 'use strict';
 
@@ -11,7 +10,6 @@ const fs    = require('fs');
 const path  = require('path');
 const url   = require('url');
 
-/* ── Config ── */
 const PORT           = process.env.PORT || 3000;
 const ANTHROPIC_KEY  = process.env.ANTHROPIC_KEY  || '';
 const ELEVENLABS_KEY = process.env.ELEVENLABS_KEY  || '';
@@ -19,7 +17,22 @@ const ELEVENLABS_KEY = process.env.ELEVENLABS_KEY  || '';
 if (!ANTHROPIC_KEY)  console.warn('[WARN] ANTHROPIC_KEY env var not set');
 if (!ELEVENLABS_KEY) console.warn('[WARN] ELEVENLABS_KEY env var not set');
 
-/* ── MIME types ── */
+/* Work out where public/ is — try __dirname first, then cwd */
+const PUBLIC_DIR = (function() {
+  const candidates = [
+    path.resolve(__dirname, 'public'),
+    path.resolve(process.cwd(), 'public'),
+  ];
+  for (const d of candidates) {
+    if (fs.existsSync(d)) {
+      console.log('[Stashwise] Serving static files from:', d);
+      return d;
+    }
+  }
+  console.error('[ERROR] Could not find public/ directory. Checked:', candidates);
+  return candidates[0]; // fallback — will 404 gracefully
+})();
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js':   'application/javascript; charset=utf-8',
@@ -30,7 +43,7 @@ const MIME = {
   '.svg':  'image/svg+xml',
 };
 
-/* ── Helper: forward a proxied request ── */
+/* ── Proxy helpers ── */
 function proxyJSON(req, res, targetHost, targetPath, extraHeaders) {
   let body = '';
   req.on('data', chunk => { body += chunk; });
@@ -61,7 +74,6 @@ function proxyJSON(req, res, targetHost, targetPath, extraHeaders) {
   });
 }
 
-/* ── Helper: stream a proxied response (for TTS binary) ── */
 function proxyBinary(req, res, targetHost, targetPath, extraHeaders) {
   let body = '';
   req.on('data', chunk => { body += chunk; });
@@ -92,7 +104,6 @@ function proxyBinary(req, res, targetHost, targetPath, extraHeaders) {
   });
 }
 
-/* ── Helper: forward multipart (STT) ── */
 function proxyMultipart(req, res, targetHost, targetPath, extraHeaders) {
   const chunks = [];
   req.on('data', chunk => chunks.push(chunk));
@@ -139,7 +150,7 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  /* ── /api/claude  – Anthropic messages proxy ── */
+  /* ── API routes ── */
   if (req.method === 'POST' && pathname === '/api/claude') {
     return proxyJSON(req, res, 'api.anthropic.com', '/v1/messages', {
       'x-api-key': ANTHROPIC_KEY,
@@ -147,7 +158,6 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  /* ── /api/tts  – ElevenLabs TTS proxy ── */
   if (req.method === 'POST' && pathname.startsWith('/api/tts/')) {
     const voiceId = pathname.replace('/api/tts/', '');
     return proxyBinary(req, res, 'api.elevenlabs.io', '/v1/text-to-speech/' + voiceId, {
@@ -155,28 +165,32 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  /* ── /api/stt  – ElevenLabs STT proxy ── */
   if (req.method === 'POST' && pathname === '/api/stt') {
     return proxyMultipart(req, res, 'api.elevenlabs.io', '/v1/speech-to-text', {
       'xi-api-key': ELEVENLABS_KEY,
     });
   }
 
-  /* ── Static files ── */
+  /* ── Static file serving ── */
   if (req.method === 'GET') {
-    let filePath = path.join(__dirname, 'public', pathname === '/' ? 'index.html' : pathname);
+    /* Normalise: strip query string, default to index.html */
+    let clean = pathname.split('?')[0];
+    if (clean === '/' || clean === '') clean = 'index.html';
+    else clean = clean.replace(/^\//, ''); /* strip leading slash */
 
-    /* Prevent path traversal */
-    const publicDir = path.resolve(__dirname, 'public');
-    if (!path.resolve(filePath).startsWith(publicDir)) {
+    const filePath = path.join(PUBLIC_DIR, clean);
+
+    /* Path traversal guard */
+    if (!path.resolve(filePath).startsWith(path.resolve(PUBLIC_DIR))) {
       res.writeHead(403);
       return res.end('Forbidden');
     }
 
     fs.readFile(filePath, (err, data) => {
       if (err) {
+        console.error('[404]', filePath, err.code);
         res.writeHead(404, { 'Content-Type': 'text/plain' });
-        return res.end('Not found');
+        return res.end('Not found: ' + clean);
       }
       const ext  = path.extname(filePath);
       const mime = MIME[ext] || 'application/octet-stream';
@@ -192,4 +206,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log('[Stashwise] Server running on port ' + PORT);
+  console.log('[Stashwise] PUBLIC_DIR:', PUBLIC_DIR);
+  console.log('[Stashwise] __dirname:', __dirname);
+  console.log('[Stashwise] cwd:', process.cwd());
 });
