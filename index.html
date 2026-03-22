@@ -495,11 +495,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 'use strict';
 
 /* ╔══════════════════════════════════════════════╗
-   ║  API CONFIG  – keys live in server env only  ║
+   ║  KEYS  -  fill these in                        ║
    ╚══════════════════════════════════════════════╝ */
-var API_BASE         = '';          // empty = same origin (the proxy server)
+var API_BASE         = '';
 var ELEVENLABS_VOICE = 'EXAVITQu4vr4xnSDxMaL';
-var PRODUCTS         = {};          // loaded from /products.json at startup
+var PRODUCTS         = {};  // populated from /products.json at startup
 
 /* ╔══════════════════════════════════════════════╗
    ║  FIELD DEFINITIONS                           ║
@@ -959,7 +959,7 @@ var T = {
     qNote:'Ctrl+Enter to continue', extractingTxt:'Understanding your answer...',
     vStatusTxt:'Recording...', vStatusDone:'Transcribing...',
     resLabels:{invest:'Investment Assessment - NZ', borrow:'Loan Assessment - NZ', insure:'Insurance Assessment - NZ', general:'Financial Assessment - NZ'},
-    disclaimer:'Rates sourced from public provider information, last verified March 2026 (see individual product cards). Rates change — always confirm directly with the provider before acting. Stashwise provides educational guidance only and is not a registered financial adviser under the Financial Advisers Act 2008. For personalised advice consult a licensed financial adviser.',
+    disclaimer:'Rates sourced from public provider information, last verified March 2026. Rates change — always confirm directly with the provider before acting. Stashwise provides educational guidance only and is not a registered financial adviser. For personalised advice consult a licensed financial adviser.',
     hlPhrases:['Where should your <em>money go?</em>','Safe returns, <em>clear reasoning.</em>','Smart money. <em>Simply explained.</em>','Your best financial <em>path forward.</em>']
   },
   IN: {
@@ -973,7 +973,7 @@ var T = {
     qNote:'Ctrl+Enter se aage badhein', extractingTxt:'Aapka jawab samajh rahe hain...',
     vStatusTxt:'Recording...', vStatusDone:'Transcribing...',
     resLabels:{invest:'Nivesh Aaklan - Bharat', borrow:'Rin Aaklan - Bharat', insure:'Bima Aaklan - Bharat', general:'Vittiy Aaklan - Bharat'},
-    disclaimer:'Darein March 2026 tak saavedhan saarvjanik srot se li gayi hain. Kaaravaai se pehle seedha provider ke saath nirikhit darein ki pushti karen. Stashwise keval shaikshik margdarshan pradaan karta hai — yeh SEBI/RBI ke tahat panjikrit vittiy salahkar nahi hai.',
+    disclaimer:'Darein March 2026 tak li gayi hain. Kaaravaai se pehle seedha provider se pushti karen. Stashwise keval shaikshik margdarshan hai — SEBI/RBI ke tahat panjikrit salahkar nahi.',
     hlPhrases:['Aapka paisa <em>kahan lagaye?</em>','Surakshit returns, <em>saaph jawab.</em>','Smart money. <em>Aasaan bhasha mein.</em>','Aapka sabse <em>behtar raasta.</em>']
   }
 };
@@ -999,242 +999,6 @@ var G = {
 };
 
 /* ╔══════════════════════════════════════════════╗
-   ║  PRODUCTS                                    ║
-   ╚══════════════════════════════════════════════╝ */
-/* Products embedded directly - no fetch needed, works with file:// and any server */
-var PRODUCTS = {
-  NZ: {
-    investments: [
-      {id:'nz-td-anz-6m', provider:'ANZ', product:'Term Deposit 6 months',
-       category:'term_deposit', rate_pa:4.90, min_amount:1000, term_months:6,
-       liquidity:'locked', risk:'very_low', risk_note:'Major bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Rate reduction penalty applies',
-       url:'https://www.anz.co.nz/personal/investments/term-deposits/', last_verified:'2025-03'},
-      {id:'nz-td-anz-12m', provider:'ANZ', product:'Term Deposit 12 months',
-       category:'term_deposit', rate_pa:5.10, min_amount:1000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'Major bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Rate reduction penalty applies',
-       url:'https://www.anz.co.nz/personal/investments/term-deposits/', last_verified:'2025-03'},
-      {id:'nz-td-asb-6m', provider:'ASB', product:'Term Deposit 6 months',
-       category:'term_deposit', rate_pa:4.85, min_amount:1000, term_months:6,
-       liquidity:'locked', risk:'very_low', risk_note:'Major bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty rate applies',
-       url:'https://www.asb.co.nz/investments/term-investments', last_verified:'2025-03'},
-      {id:'nz-td-asb-12m', provider:'ASB', product:'Term Deposit 12 months',
-       category:'term_deposit', rate_pa:5.05, min_amount:1000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'Major bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty rate applies',
-       url:'https://www.asb.co.nz/investments/term-investments', last_verified:'2025-03'},
-      {id:'nz-td-bnz-6m', provider:'BNZ', product:'Term Deposit 6 months',
-       category:'term_deposit', rate_pa:4.80, min_amount:1000, term_months:6,
-       liquidity:'locked', risk:'very_low', risk_note:'Major bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty applies',
-       url:'https://www.bnz.co.nz/personal-banking/savings-and-investments/term-deposits', last_verified:'2025-03'},
-      {id:'nz-td-bnz-12m', provider:'BNZ', product:'Term Deposit 12 months',
-       category:'term_deposit', rate_pa:5.00, min_amount:1000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'Major bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty applies',
-       url:'https://www.bnz.co.nz/personal-banking/savings-and-investments/term-deposits', last_verified:'2025-03'},
-      {id:'nz-td-westpac-12m', provider:'Westpac NZ', product:'Term Deposit 12 months',
-       category:'term_deposit', rate_pa:5.00, min_amount:1000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'Major bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty applies',
-       url:'https://www.westpac.co.nz/savings-investments/term-deposits/', last_verified:'2025-03'},
-      {id:'nz-td-kiwibank-12m', provider:'Kiwibank', product:'Term Deposit 12 months',
-       category:'term_deposit', rate_pa:5.05, min_amount:1000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'NZ-owned bank, RBNZ regulated',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty applies',
-       url:'https://www.kiwibank.co.nz/personal-banking/savings/term-deposits/', last_verified:'2025-03'},
-      {id:'nz-td-heartland-6m', provider:'Heartland Bank', product:'Term Deposit 6 months',
-       category:'term_deposit', rate_pa:5.35, min_amount:5000, term_months:6,
-       liquidity:'locked', risk:'low', risk_note:'Registered bank, RBNZ regulated, smaller than Big 5',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty applies, contact bank',
-       url:'https://www.heartland.co.nz/savings/term-deposits', last_verified:'2025-03'},
-      {id:'nz-td-heartland-12m', provider:'Heartland Bank', product:'Term Deposit 12 months',
-       category:'term_deposit', rate_pa:5.45, min_amount:5000, term_months:12,
-       liquidity:'locked', risk:'low', risk_note:'Registered bank, RBNZ regulated, smaller than Big 5',
-       tax_treatment:'Interest taxable at marginal rate (RWT withheld at source)',
-       early_withdrawal:'Penalty applies, contact bank',
-       url:'https://www.heartland.co.nz/savings/term-deposits', last_verified:'2025-03'},
-      {id:'nz-pie-anz-cash', provider:'ANZ', product:'ANZ Cash PIE Fund',
-       category:'pie_fund', rate_pa:4.70, min_amount:1, term_months:null,
-       liquidity:'high', risk:'very_low', risk_note:'RBNZ regulated PIE, capital stable',
-       tax_treatment:'Taxed at PIR (capped at 28%), NOT marginal rate. Advantage for 33% earners.',
-       early_withdrawal:'At call, no penalty',
-       url:'https://www.anz.co.nz/personal/investments/pie-funds/', last_verified:'2025-03'},
-      {id:'nz-pie-kiwibank-notice', provider:'Kiwibank', product:'Notice Saver (PIE)',
-       category:'pie_fund', rate_pa:4.60, min_amount:1, term_months:null,
-       liquidity:'medium', risk:'very_low', risk_note:'NZ-owned bank, PIE structure',
-       tax_treatment:'Taxed at PIR (capped at 28%)',
-       early_withdrawal:'32-day notice required',
-       url:'https://www.kiwibank.co.nz/personal-banking/savings/notice-saver/', last_verified:'2025-03'},
-      {id:'nz-tbill-91d', provider:'NZ Government (NZDMO)', product:'NZ Treasury Bill 91-day',
-       category:'government_security', rate_pa:4.65, min_amount:100000, term_months:3,
-       liquidity:'medium', risk:'very_low', risk_note:'Sovereign guarantee, NZ Government',
-       tax_treatment:'Discount gain taxed as income at marginal rate',
-       early_withdrawal:'Tradeable on secondary market',
-       url:'https://www.nzdmo.govt.nz/', last_verified:'2025-03'}
-    ],
-    loans: [
-      {id:'nz-loan-asb', provider:'ASB', product:'Personal Loan',
-       category:'personal_loan', rate_pa_min:12.95, rate_pa_max:19.95, rate_pa_typical:14.95,
-       fees:{establishment:150, monthly:0}, min_amount:3000, max_amount:75000,
-       min_term_months:6, max_term_months:84,
-       eligibility:'NZ citizen or permanent resident. Regular income. Credit check required.',
-       suitable_for_variable_income:false,
-       url:'https://www.asb.co.nz/loans/personal-loans', last_verified:'2025-03'},
-      {id:'nz-loan-anz', provider:'ANZ', product:'Personal Loan',
-       category:'personal_loan', rate_pa_min:13.90, rate_pa_max:20.95, rate_pa_typical:15.90,
-       fees:{establishment:150, monthly:0}, min_amount:3000, max_amount:40000,
-       min_term_months:6, max_term_months:84,
-       eligibility:'NZ citizen or permanent resident. Employed or regular income.',
-       suitable_for_variable_income:false,
-       url:'https://www.anz.co.nz/personal/loans/personal-loans/', last_verified:'2025-03'},
-      {id:'nz-loan-bnz', provider:'BNZ', product:'Personal Loan',
-       category:'personal_loan', rate_pa_min:12.95, rate_pa_max:19.95, rate_pa_typical:14.95,
-       fees:{establishment:100, monthly:0}, min_amount:2000, max_amount:50000,
-       min_term_months:6, max_term_months:60,
-       eligibility:'NZ citizen or permanent resident. Regular income required.',
-       suitable_for_variable_income:false,
-       url:'https://www.bnz.co.nz/personal-banking/loans/personal-loan', last_verified:'2025-03'},
-      {id:'nz-loan-westpac', provider:'Westpac NZ', product:'Personal Loan',
-       category:'personal_loan', rate_pa_min:13.95, rate_pa_max:22.95, rate_pa_typical:15.95,
-       fees:{establishment:150, monthly:0}, min_amount:2000, max_amount:50000,
-       min_term_months:6, max_term_months:60,
-       eligibility:'18+ NZ resident. Employed with regular income.',
-       suitable_for_variable_income:false,
-       url:'https://www.westpac.co.nz/loans/personal-loan/', last_verified:'2025-03'},
-      {id:'nz-loan-avanti', provider:'Avanti Finance', product:'Personal Loan',
-       category:'personal_loan', rate_pa_min:14.95, rate_pa_max:29.95, rate_pa_typical:21.95,
-       fees:{establishment:250, monthly:10}, min_amount:1000, max_amount:50000,
-       min_term_months:3, max_term_months:84,
-       eligibility:'Specialises in non-standard borrowers. Self-employed welcome. Irregular income considered.',
-       suitable_for_variable_income:true,
-       url:'https://www.avantifinance.co.nz/personal-loans', last_verified:'2025-03'},
-      {id:'nz-loan-gem', provider:'Gem by Latitude', product:'Personal Loan',
-       category:'personal_loan', rate_pa_min:12.69, rate_pa_max:27.99, rate_pa_typical:19.99,
-       fees:{establishment:240, monthly:10}, min_amount:1000, max_amount:40000,
-       min_term_months:6, max_term_months:60,
-       eligibility:'18+ NZ resident. Wider income types accepted including self-employed.',
-       suitable_for_variable_income:true,
-       url:'https://www.gemfinance.co.nz/loans/personal-loans/', last_verified:'2025-03'}
-    ],
-    insurance: [
-      {id:'nz-ins-life-asteron', provider:'Asteron Life', product:'Life Insurance',
-       category:'life_insurance', indicative_monthly_premium_30yo:25, coverage_typical:'Up to $1M+',
-       key_features:['Level or stepped premiums','Terminal illness benefit included','Waiver of premium option'],
-       eligibility:'NZ residents up to age 75. Medical underwriting required.',
-       note:'Premium varies by age, health, sum insured.',
-       url:'https://www.asteronlife.co.nz/', last_verified:'2025-03'},
-      {id:'nz-ins-income-aia', provider:'AIA NZ', product:'Income Protection',
-       category:'income_protection', indicative_monthly_premium_30yo:60, coverage_typical:'Up to 75% of income',
-       key_features:['2-year or to-age-65 benefit period','Agreed or indemnity value','Waiting periods 4-52 weeks'],
-       eligibility:'NZ residents in paid employment. Medical underwriting required.',
-       note:'Self-employed particularly benefit. Premiums tax-deductible if income is taxable.',
-       url:'https://www.aia.co.nz/en/individuals/products/income-protection.html', last_verified:'2025-03'},
-      {id:'nz-ins-trauma-partners', provider:'Partners Life', product:'Trauma / Critical Illness',
-       category:'trauma_insurance', indicative_monthly_premium_30yo:35, coverage_typical:'$100k-$500k lump sum',
-       key_features:['Covers 40+ trauma events','Heart attack, stroke, cancer included','Standalone or with life cover'],
-       eligibility:'NZ residents. Medical underwriting required.',
-       note:'Lump sum on diagnosis of covered condition.',
-       url:'https://www.partnerslife.co.nz/', last_verified:'2025-03'}
-    ]
-  },
-  IN: {
-    investments: [
-      {id:'in-fd-sbi-1y', provider:'State Bank of India (SBI)', product:'Fixed Deposit 1 year',
-       category:'fixed_deposit', rate_pa:6.80, min_amount:1000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'Government-owned, sovereign backing',
-       tax_treatment:'Interest taxable at slab. TDS at 10% if interest exceeds Rs 40,000/year (Rs 1L for seniors).',
-       url:'https://sbi.co.in/web/personal-banking/investments-deposits/deposits/term-deposits', last_verified:'2025-03'},
-      {id:'in-fd-hdfc-1y', provider:'HDFC Bank', product:'Fixed Deposit 1 year',
-       category:'fixed_deposit', rate_pa:7.00, min_amount:5000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'Major private bank. DICGC insured up to Rs 5L.',
-       tax_treatment:'Interest taxable at slab. TDS at 10% if interest exceeds Rs 40,000/year.',
-       url:'https://www.hdfcbank.com/personal/save/deposits/fixed-deposit', last_verified:'2025-03'},
-      {id:'in-fd-icici-1y', provider:'ICICI Bank', product:'Fixed Deposit 1 year',
-       category:'fixed_deposit', rate_pa:6.90, min_amount:10000, term_months:12,
-       liquidity:'locked', risk:'very_low', risk_note:'Major private bank. DICGC insured up to Rs 5L.',
-       tax_treatment:'Interest taxable at slab. TDS at 10% if interest exceeds Rs 40,000/year.',
-       url:'https://www.icicibank.com/personal-banking/deposits/fixed-deposit', last_verified:'2025-03'},
-      {id:'in-fd-idfc-1y', provider:'IDFC First Bank', product:'Fixed Deposit 1 year',
-       category:'fixed_deposit', rate_pa:7.75, min_amount:10000, term_months:12,
-       liquidity:'locked', risk:'low', risk_note:'Private bank, RBI regulated. DICGC insured up to Rs 5L.',
-       tax_treatment:'Interest taxable at slab. TDS at 10% if interest exceeds Rs 40,000/year.',
-       url:'https://www.idfcfirstbank.com/personal-banking/deposits/fixed-deposit', last_verified:'2025-03'},
-      {id:'in-fd-unity-sfb-1y', provider:'Unity Small Finance Bank', product:'Fixed Deposit 1 year',
-       category:'fixed_deposit', rate_pa:9.00, min_amount:1000, term_months:12,
-       liquidity:'locked', risk:'moderate', risk_note:'Small Finance Bank, RBI regulated. DICGC insured up to Rs 5L.',
-       tax_treatment:'Interest taxable at slab. TDS at 10% if interest exceeds Rs 40,000/year.',
-       url:'https://www.unitysb.com/', last_verified:'2025-03'},
-      {id:'in-tbill-91d', provider:'RBI / Government of India', product:'Treasury Bill 91-day',
-       category:'government_security', rate_pa:6.72, min_amount:25000, term_months:3,
-       liquidity:'medium', risk:'very_low', risk_note:'Sovereign guarantee, Government of India',
-       tax_treatment:'Discount gain taxed as STCG at slab. No TDS - full compounding, tax only at filing.',
-       url:'https://www.rbi.org.in/', last_verified:'2025-03'},
-      {id:'in-tbill-364d', provider:'RBI / Government of India', product:'Treasury Bill 364-day',
-       category:'government_security', rate_pa:6.90, min_amount:25000, term_months:12,
-       liquidity:'medium', risk:'very_low', risk_note:'Sovereign guarantee, Government of India',
-       tax_treatment:'Discount gain taxed as STCG at slab. No TDS - full compounding, tax only at filing.',
-       url:'https://www.rbi.org.in/', last_verified:'2025-03'},
-      {id:'in-mf-liquid-sbi', provider:'SBI Mutual Fund', product:'SBI Liquid Fund (Direct Growth)',
-       category:'debt_mutual_fund', rate_pa:7.20, min_amount:500, term_months:null,
-       liquidity:'very_high', risk:'low', risk_note:'SEBI regulated. NAV fluctuates but minimal credit risk.',
-       tax_treatment:'All gains at slab rate. No TDS for residents. Tax deferred until redemption - compounding advantage.',
-       url:'https://www.sbimf.com/', last_verified:'2025-03'},
-      {id:'in-ppf', provider:'Post Office / Authorised Banks', product:'Public Provident Fund (PPF)',
-       category:'government_scheme', rate_pa:7.10, min_amount:500, max_amount:150000, term_months:180,
-       liquidity:'low', risk:'very_low', risk_note:'Government of India guarantee. EEE tax status.',
-       tax_treatment:'EEE: contributions, interest, and maturity all tax-free.',
-       url:'https://www.indiapost.gov.in/', last_verified:'2025-03'},
-      {id:'in-scss', provider:'Post Office / Authorised Banks', product:'Senior Citizens Savings Scheme (SCSS)',
-       category:'government_scheme', rate_pa:8.20, min_amount:1000, max_amount:3000000, term_months:60,
-       liquidity:'low', risk:'very_low', risk_note:'Government of India guarantee.',
-       tax_treatment:'Interest taxable at slab. TDS if interest exceeds Rs 1L/year.',
-       eligibility_note:'Only for individuals aged 60+ (55+ for VRS / retired defence)',
-       url:'https://www.indiapost.gov.in/', last_verified:'2025-03'}
-    ],
-    loans: [
-      {id:'in-loan-sbi', provider:'SBI', product:'SBI Personal Loan',
-       category:'personal_loan', rate_pa_min:11.45, rate_pa_max:14.85, rate_pa_typical:12.50,
-       fees:{processing:'1% + GST', prepayment:'Nil for floating'},
-       min_amount:25000, max_amount:2000000, min_term_months:6, max_term_months:72,
-       eligibility:'Salaried or self-employed. Net income min Rs 15,000/month. Credit score 700+.',
-       url:'https://sbi.co.in/web/personal-banking/loans/personal-loans', last_verified:'2025-03'},
-      {id:'in-loan-hdfc', provider:'HDFC Bank', product:'Personal Loan',
-       category:'personal_loan', rate_pa_min:10.50, rate_pa_max:21.00, rate_pa_typical:14.00,
-       fees:{processing:'Up to 2.5%', prepayment:'2-4% of outstanding'},
-       min_amount:50000, max_amount:4000000, min_term_months:12, max_term_months:60,
-       eligibility:'Salaried. Min salary Rs 25,000/month. Age 21-60.',
-       url:'https://www.hdfcbank.com/personal/borrow/popular-loans/personal-loan', last_verified:'2025-03'}
-    ],
-    insurance: [
-      {id:'in-ins-term-lic', provider:'LIC India', product:'Tech Term Plan',
-       category:'term_life', indicative_annual_premium_30yo_1cr:8500, sum_assured_example:'Rs 1 Crore',
-       key_features:['Pure term plan','Online purchase available','Death benefit only'],
-       eligibility:'Age 18-65. Medical underwriting may be required.',
-       note:'Indicative for 30-year-old non-smoker, Rs 1 Crore sum, 30-year term.',
-       url:'https://licindia.in/', last_verified:'2025-03'},
-      {id:'in-ins-health-star', provider:'Star Health Insurance', product:'Comprehensive Health Plan',
-       category:'health_insurance', indicative_annual_premium_30yo:12000, indicative_annual_premium_40yo:18000,
-       coverage_typical:'Rs 5L to Rs 1Cr',
-       key_features:['Cashless hospitalisation','Pre and post hospitalisation','No-claim bonus','80D deduction on premium'],
-       eligibility:'Age 18-75.',
-       url:'https://www.starhealth.in/', last_verified:'2025-03'}
-    ]
-  }
-};
-
-/* ╔══════════════════════════════════════════════╗
    ║  HEADLINE ROTATOR                            ║
    ╚══════════════════════════════════════════════╝ */
 (function(){
@@ -1255,73 +1019,25 @@ var PRODUCTS = {
 })();
 
 
-/* ╔══════════════════════════════════════════════╗
-   ║  LOAD PRODUCT CATALOG FROM SERVER            ║
-   ╚══════════════════════════════════════════════╝ */
+/* ── Load product catalog from server ── */
 function loadProducts(callback) {
   fetch('/products.json')
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      // Map server format to app format
-      var countries = ['NZ', 'IN'];
-      countries.forEach(function(c) {
+      ['NZ','IN'].forEach(function(c) {
         if (!data[c]) return;
         PRODUCTS[c] = {
-          investments: (data[c].investments || []).map(function(p) {
-            return {
-              id: p.id, provider: p.provider, product: p.product,
-              category: p.category, rate_pa: p.rate_pa,
-              rate_pa_senior: p.rate_pa_senior,
-              min_amount: p.min_amount, max_amount: p.max_amount,
-              term_months: p.term_months, liquidity: p.liquidity,
-              risk: p.risk, credit_rating: p.credit_rating,
-              risk_note: p.risk_note, tax_treatment: p.tax_treatment,
-              early_withdrawal: p.early_withdrawal,
-              eligibility_note: p.eligibility_note,
-              url: p.url, last_verified: p.last_verified,
-              highlight: p.highlight
-            };
-          }),
-          loans: (data[c].loans || []).map(function(p) {
-            return {
-              id: p.id, provider: p.provider, product: p.product,
-              category: p.category,
-              rate_pa_min: p.rate_pa_min, rate_pa_max: p.rate_pa_max,
-              rate_pa_typical: p.rate_pa_typical,
-              fees: p.fees, min_amount: p.min_amount, max_amount: p.max_amount,
-              min_term_months: p.min_term_months, max_term_months: p.max_term_months,
-              eligibility: p.eligibility, suitable_for_variable_income: p.suitable_for_variable_income,
-              url: p.url, last_verified: p.last_verified
-            };
-          }),
-          insurance: (data[c].insurance || []).map(function(p) {
-            return {
-              id: p.id, provider: p.provider, product: p.product,
-              category: p.category,
-              indicative_monthly_premium_30yo: p.indicative_monthly_premium_30yo,
-              indicative_annual_premium_30yo_1cr: p.indicative_annual_premium_30yo_1cr,
-              indicative_annual_premium_30yo: p.indicative_annual_premium_30yo,
-              indicative_annual_premium_40yo: p.indicative_annual_premium_40yo,
-              coverage_typical: p.coverage_typical,
-              sum_assured_example: p.sum_assured_example,
-              key_features: p.key_features, eligibility: p.eligibility,
-              note: p.note, url: p.url, last_verified: p.last_verified
-            };
-          })
+          investments: data[c].investments || [],
+          loans:       data[c].loans       || [],
+          insurance:   data[c].insurance   || []
         };
       });
-      console.log('[Stashwise] Product catalog loaded:', 
-        Object.keys(PRODUCTS).map(function(k) {
-          return k + ':' + (PRODUCTS[k].investments||[]).length + 'inv/' +
-                          (PRODUCTS[k].loans||[]).length + 'loans/' +
-                          (PRODUCTS[k].insurance||[]).length + 'ins';
-        }).join(', '));
+      console.log('[Stashwise] Products loaded — NZ:', (PRODUCTS.NZ && PRODUCTS.NZ.investments.length) + ' investments, IN:', (PRODUCTS.IN && PRODUCTS.IN.investments.length) + ' investments');
       callback();
     })
     .catch(function(err) {
-      console.error('[Stashwise] Failed to load products.json:', err);
-      // App still works — PRODUCTS stays empty and Claude will note no catalog available
-      callback();
+      console.error('[Stashwise] products.json load failed:', err);
+      callback(); // continue anyway
     });
 }
 
@@ -1758,7 +1474,7 @@ function triggerAnalysis() {
 function buildFinalSystemPrompt() {
   var country = G.country === 'NZ' ? 'New Zealand' : 'India';
   var currency = G.country === 'NZ' ? 'NZD ($)' : 'INR (Rs./lakhs)';
-  return 'You are Stashwise, an expert financial advisor for ' + country + '. Analyse the user profile from the conversation and return ONLY valid JSON.\n\nCRITICAL GROUNDING RULES:\n1. You MUST ONLY recommend products listed verbatim in the PRODUCT CATALOG below. Do not invent any product.\n2. Use the EXACT provider name, product name, rate, and URL from the catalog.\n3. If no catalog product suits the user, say so in the summary rather than inventing one.\n4. Rates are verified as of last_verified — do not alter them.\n\nSchema:\n{"summary":"2-3 sentence plain summary","intent":"invest|borrow|insure|general","products":[{"rank":1,"name":"product name","provider":"exact provider name from catalog","score":85,"score_label":"Best match","tags":["Top Pick"],"why":"2 sentence specific reason","stats":{"Rate":"X% p.a.","Term":"X months","Min":"' + currency + ' X","Risk":"Very Low"},"tax_note":"post-tax calc if relevant","url":"exact url from catalog","last_verified":"YYYY-MM"}],"considerations":["point 1"],"red_flags":["risk if any"],"next_steps":["action 1"]}\n\nRULES:\n- 2-4 ranked products. ONLY use products from the catalog below - exact names, exact rates, exact URLs.\n- Show post-tax arithmetic for investments. For loans: flag if unaffordable.\n- Currency: ' + currency + '\n\n' + buildCatalog();
+  return 'You are Stashwise, an expert financial advisor for ' + country + '. Analyse the user profile from the conversation and return ONLY valid JSON.\n\nCRITICAL GROUNDING RULES:\n1. ONLY recommend products listed verbatim in the PRODUCT CATALOG below. Do not invent any product.\n2. Use the EXACT provider name, product name, rate, and URL from the catalog.\n3. If no catalog product suits the user, say so rather than inventing one.\n4. Do not alter rates — use exactly what is in the catalog.\n\nSchema:\n{"summary":"2-3 sentence plain summary","intent":"invest|borrow|insure|general","products":[{"rank":1,"name":"product name","provider":"exact provider name from catalog","score":85,"score_label":"Best match","tags":["Top Pick"],"why":"2 sentence specific reason","stats":{"Rate":"X% p.a.","Term":"X months","Min":"' + currency + ' X","Risk":"Very Low"},"tax_note":"post-tax calc if relevant","url":"exact url from catalog","last_verified":"YYYY-MM"}],"considerations":["point 1"],"red_flags":["risk if any"],"next_steps":["action 1"]}\n\nRULES:\n- 2-4 ranked products. ONLY use products from the catalog below - exact names, exact rates, exact URLs.\n- Show post-tax arithmetic for investments. For loans: flag if unaffordable.\n- Currency: ' + currency + '\n\n' + buildCatalog();
 }
 
 function buildFinalUserMsg() {
@@ -2001,4 +1717,3 @@ function escA(s){return String(s||'').replace(/"/g,'%22');}
 </script>
 </body>
 </html>
-
