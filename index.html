@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stashwise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ── */
+:root {
+  --bg:     #0c0e14;
+  --bg2:    #13161f;
+  --bg3:    #1a1d28;
+  --bg4:    #202535;
+  --ln:     rgba(255,255,255,0.07);
+  --ln2:    rgba(255,255,255,0.13);
+  --t0:     #f2ede4;
+  --t1:     rgba(242,237,228,.62);
+  --t2:     rgba(242,237,228,.32);
+  --t3:     rgba(242,237,228,.15);
+  --teal:   #3ecfa0;
+  --tealD:  #28a07a;
+  --tealBg: rgba(62,207,160,.1);
+  --gold:   #d4a84e;
+  --goldBg: rgba(212,168,78,.1);
+  --red:    #e05555;
+  --redBg:  rgba(224,85,85,.1);
+  --r:      12px;
+  --rs:     7px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t0);font-size:14px;line-height:1.65;overflow-x:hidden;}
+
+/* ── Topbar ── */
+.top{
+  position:fixed;top:0;left:0;right:0;z-index:200;height:52px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  background:rgba(12,14,20,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--ln);
+}
+.brand{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;}
+.brand-mark{
+  width:29px;height:29px;border-radius:8px;
+  background:linear-gradient(135deg,var(--teal),var(--tealD));
+  display:grid;place-items:center;
+  font-family:'Playfair Display',serif;font-size:14px;font-style:italic;
+  color:#0c0e14;font-weight:700;box-shadow:0 2px 10px rgba(62,207,160,.28);
+}
+.brand-name{font-family:'Playfair Display',serif;font-size:17px;letter-spacing:-.3px;}
+.top-r{display:flex;align-items:center;gap:10px;}
+.sel-wrap{position:relative;}
+.sel-wrap::after{content:'v';position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--t2);pointer-events:none;font-size:10px;}
+.sel{
+  -webkit-appearance:none;appearance:none;
+  background:var(--bg3);border:1px solid var(--ln);color:var(--t0);
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:500;
+  padding:6px 26px 6px 10px;border-radius:var(--rs);cursor:pointer;outline:none;
+  transition:border-color .15s;
+}
+.sel:focus{border-color:rgba(62,207,160,.5);}
+.v-status{
+  display:none;align-items:center;gap:6px;
+  font-size:11px;color:var(--teal);padding:5px 10px;
+  border-radius:var(--rs);background:var(--tealBg);border:1px solid rgba(62,207,160,.22);
+}
+.v-status.on{display:flex;}
+.v-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:vp 1s ease-in-out infinite;}
+@keyframes vp{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
+.top-btn{
+  display:none;background:none;border:1px solid var(--ln);color:var(--t2);
+  font-family:'Inter',sans-serif;font-size:11px;padding:6px 12px;
+  border-radius:var(--rs);cursor:pointer;transition:all .15s;
+}
+.top-btn:hover{border-color:var(--ln2);color:var(--t1);}
+
+/* ── Screens ── */
+.scr{display:none;}
+.scr.on{display:flex;}
+#pgLand.on{flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:72px 20px 56px;}
+#pgIntake.on{min-height:100vh;padding-top:52px;}
+#pgRes.on{flex-direction:column;min-height:100vh;padding:80px 24px 64px;max-width:900px;margin:0 auto;}
+
+/* ── Landing ── */
+.land-glow{position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(ellipse 60% 48% at 18% 32%,rgba(62,207,160,.07) 0%,transparent 65%),
+             radial-gradient(ellipse 42% 55% at 84% 68%,rgba(212,168,78,.04) 0%,transparent 65%);}
+.land-grid{position:fixed;inset:0;z-index:-1;
+  background-image:radial-gradient(rgba(255,255,255,.022) 1px,transparent 1px);
+  background-size:26px 26px;
+  mask-image:radial-gradient(ellipse 70% 58% at 50% 40%,black,transparent 74%);}
+.land-body{text-align:center;max-width:560px;}
+.hl-wrap{min-height:72px;overflow:visible;position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:18px;padding:0 12px;}
+.hl{
+  position:absolute;font-family:'Playfair Display',serif;
+  font-size:clamp(22px,4.2vw,44px);font-weight:400;letter-spacing:-1px;line-height:1.2;
+  opacity:0;transform:translateY(18px);transition:opacity .55s,transform .55s;
+  white-space:normal;text-align:center;width:100%;
+}
+.hl.in{opacity:1;transform:translateY(0);}
+.hl.out{opacity:0;transform:translateY(-18px);}
+.hl em{font-style:italic;color:var(--teal);}
+.land-sub{font-size:15px;font-weight:300;color:var(--t1);max-width:390px;margin:0 auto 34px;line-height:1.8;}
+.intent-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:34px;}
+.intent-btn{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:20px 24px;min-width:130px;
+  background:var(--bg2);border:1px solid var(--ln);border-radius:var(--r);
+  cursor:pointer;user-select:none;transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+.intent-btn:hover{border-color:rgba(62,207,160,.38);background:var(--tealBg);transform:translateY(-2px);box-shadow:0 8px 24px rgba(62,207,160,.1);}
+.intent-icon{font-size:24px;}
+.intent-label{font-size:13px;font-weight:500;}
+.intent-sub{font-size:10.5px;color:var(--t2);text-align:center;}
+.land-disc{font-size:11px;color:var(--t3);max-width:340px;margin:0 auto;line-height:1.6;}
+
+/* ── INTAKE LAYOUT ── */
+#pgIntake.on{display:grid;grid-template-columns:1fr 280px;}
+.intake-main{
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--ln);
+  min-height:calc(100vh - 52px);
+  position:relative;
+}
+
+/* Progress bar across top */
+.intake-progress{
+  height:2px;background:var(--bg3);flex-shrink:0;
+}
+.intake-progress-fill{
+  height:100%;background:linear-gradient(90deg,var(--teal),var(--tealD));
+  border-radius:0 2px 2px 0;transition:width .6s cubic-bezier(.4,0,.2,1);
+  width:0%;
+}
+
+/* Question area — takes most of the space */
+.q-area{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:48px 52px 32px;max-width:680px;
+}
+.q-step-label{
+  font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:14px;
+}
+.q-text{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(22px,2.8vw,32px);
+  font-weight:400;letter-spacing:-.5px;line-height:1.35;
+  color:var(--t0);margin-bottom:10px;
+}
+.q-subtext{
+  font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:28px;
+}
+
+/* Example chips */
+.q-examples{
+  display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px;
+}
+.eg{
+  font-size:12px;color:var(--t2);
+  padding:7px 13px;border-radius:100px;
+  background:var(--bg3);border:1px solid var(--ln);
+  cursor:pointer;white-space:nowrap;transition:all .15s;
+  font-style:italic;max-width:100%;white-space:normal;text-align:left;
+}
+.eg:hover{border-color:rgba(62,207,160,.35);color:var(--teal);background:var(--tealBg);}
+
+/* Text input */
+.ta-wrap{position:relative;margin-bottom:14px;}
+.q-ta{
+  width:100%;min-height:100px;
+  background:var(--bg2);border:1.5px solid var(--ln);
+  color:var(--t0);font-family:'Playfair Display',serif;font-size:16px;
+  padding:16px 18px;border-radius:var(--r);
+  outline:none;resize:none;line-height:1.65;
+  transition:border-color .15s;
+}
+.q-ta:focus{border-color:rgba(62,207,160,.45);}
+.q-ta::placeholder{color:var(--t3);font-style:italic;}
+.q-ta:disabled{opacity:.4;cursor:not-allowed;}
+
+/* Extracting indicator inside textarea */
+.ta-extracting{
+  position:absolute;bottom:12px;right:14px;
+  font-size:10.5px;color:var(--teal);
+  display:none;align-items:center;gap:5px;
+}
+.ta-extracting.on{display:flex;}
+.ext-dots span{
+  display:inline-block;width:4px;height:4px;border-radius:50%;
+  background:var(--teal);animation:td .9s ease-in-out infinite;margin-right:2px;
+}
+.ext-dots span:nth-child(2){animation-delay:.18s;}
+.ext-dots span:nth-child(3){animation-delay:.36s;}
+@keyframes td{0%,60%,100%{transform:scale(.6);opacity:.3;}30%{transform:scale(1);opacity:1;}}
+
+/* Controls row */
+.q-controls{display:flex;gap:9px;align-items:center;}
+.voice-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 16px;border-radius:var(--rs);
+  background:var(--bg3);border:1px solid var(--ln);
+  color:var(--t1);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.voice-btn:hover{border-color:var(--ln2);color:var(--t0);}
+.voice-btn.rec{background:var(--redBg);border-color:rgba(224,85,85,.3);color:var(--red);}
+.voice-btn:disabled{opacity:.35;cursor:not-allowed;}
+.next-btn{
+  flex:1;padding:12px 22px;
+  background:linear-gradient(135deg,var(--teal),var(--tealD));
+  color:#0c0e14;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  border:none;border-radius:var(--rs);cursor:pointer;
+  transition:all .15s;letter-spacing:.2px;
+  box-shadow:0 3px 14px rgba(62,207,160,.28);
+}
+.next-btn:hover{opacity:.9;transform:translateY(-1px);}
+.next-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.skip-btn{
+  background:none;border:none;color:var(--t3);
+  font-family:'Inter',sans-serif;font-size:11.5px;
+  cursor:pointer;padding:0 4px;transition:color .15s;flex-shrink:0;
+}
+.skip-btn:hover{color:var(--t2);}
+
+.q-note{font-size:10.5px;color:var(--t3);margin-top:8px;}
+
+/* Committed answers strip (above question) */
+.committed-strip{
+  padding:16px 52px 0;flex-shrink:0;
+  display:flex;flex-direction:column;gap:6px;
+}
+.committed-item{
+  display:flex;align-items:baseline;gap:10px;
+  padding:8px 14px;background:var(--bg2);border-radius:var(--rs);
+  border:1px solid var(--ln);
+  animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+.ci-label{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3);white-space:nowrap;flex-shrink:0;}
+.ci-value{font-family:'Playfair Display',serif;font-size:14px;color:var(--t0);}
+.ci-edit{background:none;border:none;color:var(--t3);font-size:10px;cursor:pointer;margin-left:auto;flex-shrink:0;padding:0 4px;transition:color .15s;}
+.ci-edit:hover{color:var(--teal);}
+
+/* Loading overlay */
+.loading-overlay{
+  position:absolute;inset:0;z-index:50;
+  background:rgba(12,14,20,.88);backdrop-filter:blur(4px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+.loading-overlay.on{display:flex;}
+.lo-text{font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:var(--t0);}
+.lo-dots{display:flex;gap:6px;}
+.lo-dots span{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:td 1.2s ease-in-out infinite;}
+.lo-dots span:nth-child(2){animation-delay:.18s;}
+.lo-dots span:nth-child(3){animation-delay:.36s;}
+.lo-sub{font-size:12px;color:var(--t2);}
+
+/* ── SIDE PANEL ── */
+.side-panel{
+  background:var(--bg2);padding:28px 18px 20px;
+  overflow-y:auto;display:flex;flex-direction:column;
+  min-height:calc(100vh - 52px);
+}
+.side-panel::-webkit-scrollbar{width:3px;}
+.side-panel::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px;}
+.sp-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--ln);}
+.sp-prog{margin-bottom:18px;}
+.sp-prog-row{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:5px;}
+.sp-track{height:2px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--tealD));border-radius:2px;transition:width .5s;}
+.sp-fields{display:flex;flex-direction:column;flex:1;margin-bottom:14px;}
+.sp-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.035);gap:6px;
+  transition:all .3s;
+}
+.sp-row.fresh .sp-v{animation:flashGreen .6s ease;}
+@keyframes flashGreen{0%{color:var(--teal);opacity:1;}100%{color:var(--teal);opacity:1;}}
+.sp-k{font-size:9.5px;color:var(--t3);white-space:nowrap;}
+.sp-v{font-size:11px;font-weight:500;text-align:right;color:var(--t3);font-style:italic;word-break:break-word;}
+.sp-v.set{color:var(--teal);font-style:normal;}
+.sp-v.warn{color:var(--gold);font-style:normal;}
+.sp-v.bad{color:var(--red);font-style:normal;}
+.sp-empty{font-size:11px;color:var(--t3);font-style:italic;padding:6px 0;opacity:.6;}
+.sp-signals{margin-bottom:14px;}
+.sp-sig-title{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px;}
+.sp-sig{font-size:11px;color:var(--t2);line-height:1.5;padding:6px 9px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--ln);margin-bottom:5px;display:flex;gap:6px;}
+.sp-sig-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:8px;}
+.sp-cta{
+  display:none;width:100%;padding:12px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,var(--teal),var(--tealD));
+  color:#0c0e14;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+  box-shadow:0 3px 14px rgba(62,207,160,.28);
+  margin-top:auto;
+}
+.sp-cta:hover{opacity:.9;transform:translateY(-1px);}
+.sp-cta:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* ── RESULTS ── */
+.res-nav{display:flex;align-items:center;gap:12px;margin-bottom:32px;flex-wrap:wrap;}
+.res-back{background:none;border:1px solid var(--ln);color:var(--t2);font-family:'Inter',sans-serif;font-size:12px;padding:7px 14px;border-radius:var(--rs);cursor:pointer;transition:all .15s;}
+.res-back:hover{border-color:var(--ln2);color:var(--t1);}
+.res-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);font-weight:500;}
+.res-tts{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  background:var(--bg2);border:1px solid var(--ln);color:var(--t1);
+  font-family:'Inter',sans-serif;font-size:11px;padding:6px 12px;
+  border-radius:var(--rs);cursor:pointer;transition:all .15s;
+}
+.res-tts:hover{border-color:rgba(62,207,160,.4);color:var(--teal);}
+.res-tts.on{background:var(--redBg);border-color:rgba(224,85,85,.3);color:var(--red);}
+.res-summary{background:var(--bg2);border:1px solid var(--ln);border-radius:var(--r);padding:24px 28px;margin-bottom:28px;}
+.res-sum-label{font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}
+.res-sum-text{font-family:'Playfair Display',serif;font-size:17px;font-weight:400;color:var(--t0);line-height:1.65;}
+.res-sec-title{font-size:9.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:14px;}
+.prod-list{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;}
+.prod-card{background:var(--bg2);border:1px solid var(--ln);border-radius:var(--r);overflow:hidden;transition:border-color .15s,box-shadow .15s;}
+.prod-card:hover{border-color:var(--ln2);box-shadow:0 4px 24px rgba(0,0,0,.4);}
+.prod-card.best-pick{border-color:rgba(62,207,160,.3);background:linear-gradient(135deg,rgba(62,207,160,.07) 0%,var(--bg2) 55%);}
+.pc-hd{display:flex;align-items:flex-start;gap:14px;padding:18px 20px 14px;}
+.pc-rank{width:36px;height:36px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;font-size:14px;font-weight:700;background:var(--bg3);color:var(--t2);border:1px solid var(--ln);}
+.prod-card.best-pick .pc-rank{background:var(--tealBg);color:var(--teal);border-color:rgba(62,207,160,.25);}
+.pc-meta{flex:1;min-width:0;}
+.pc-name{font-size:15px;font-weight:600;color:var(--t0);margin-bottom:2px;}
+.pc-prov{font-size:11.5px;color:var(--t2);}
+.pc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.pctag{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:100px;}
+.pctag.t0{background:rgba(62,207,160,.18);color:var(--teal);border:1px solid rgba(62,207,160,.28);}
+.pctag.t1{background:rgba(212,168,78,.15);color:var(--gold);border:1px solid rgba(212,168,78,.22);}
+.pctag.t2{background:rgba(100,160,230,.14);color:#64a0e6;border:1px solid rgba(100,160,230,.22);}
+.pctag.t3{background:rgba(224,85,85,.12);color:var(--red);border:1px solid rgba(224,85,85,.2);}
+.pc-score{text-align:right;flex-shrink:0;}
+.pc-score-n{font-family:'Playfair Display',serif;font-size:28px;font-weight:400;letter-spacing:-1px;line-height:1;color:var(--t1);}
+.prod-card.best-pick .pc-score-n{color:var(--teal);}
+.pc-score-l{font-size:9px;color:var(--t3);margin-top:2px;letter-spacing:.5px;}
+.pc-body{padding:0 20px 18px;}
+.pc-why{font-size:13px;color:var(--t1);line-height:1.6;margin-bottom:13px;}
+.pc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:10px;margin-bottom:13px;}
+.pc-sk{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin-bottom:2px;}
+.pc-sv{font-size:14px;font-weight:600;color:var(--t0);}
+.pc-tax{font-size:11.5px;color:var(--t2);padding:9px 12px;background:var(--bg3);border-radius:var(--rs);margin-bottom:13px;line-height:1.5;border:1px solid var(--ln);}
+.pc-foot{display:flex;align-items:center;gap:10px;}
+.pc-link{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 16px;border-radius:var(--rs);
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+  text-decoration:none;transition:all .15s;
+  border:1px solid var(--ln);background:var(--bg3);color:var(--t1);
+}
+.prod-card.best-pick .pc-link{background:var(--teal);border-color:transparent;color:#0c0e14;box-shadow:0 2px 12px rgba(62,207,160,.3);}
+.pc-link:hover{opacity:.85;}
+.pc-ver{font-size:10px;color:var(--t3);}
+.cons-card{background:var(--bg2);border:1px solid var(--ln);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;}
+.cons-title{font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);margin-bottom:13px;}
+.cons-list{display:flex;flex-direction:column;gap:8px;}
+.cons-item{display:flex;gap:10px;font-size:13.5px;color:var(--t1);line-height:1.55;}
+.cons-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:8px;}
+.cons-dot.gold{background:var(--gold);}
+.cons-dot.teal{background:var(--teal);}
+.red-card{background:var(--redBg);border:1px solid rgba(224,85,85,.22);border-radius:var(--r);padding:16px 20px;margin-bottom:22px;}
+.red-title{font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--red);margin-bottom:10px;}
+.red-item{font-size:13px;color:var(--t1);margin-bottom:6px;display:flex;gap:8px;}
+.disc{background:var(--goldBg);border:1px solid rgba(212,168,78,.2);border-radius:var(--r);padding:14px 18px;font-size:12px;color:var(--t2);line-height:1.65;}
+.err-card{background:var(--redBg);border:1px solid rgba(224,85,85,.22);border-radius:var(--r);padding:20px 24px;}
+.err-card strong{color:var(--red);}
+.err-card p{font-size:13px;margin-top:7px;color:var(--t1);}
+
+/* Responsive */
+@media(max-width:820px){
+  #pgIntake.on{display:flex;flex-direction:column;}
+  .side-panel{display:none;}
+  .q-area,.committed-strip{padding-left:20px;padding-right:20px;}
+}
+@media(max-width:500px){
+  .intent-row{gap:10px;}
+  .intent-btn{min-width:110px;padding:16px 16px;}
+  .q-text{font-size:20px;}
+  .hl{font-size:22px;letter-spacing:-.5px;}
+  .hl-wrap{min-height:60px;}
+  #pgRes.on{padding:70px 14px 48px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<nav class="top">
+  <div class="brand" onclick="goHome()">
+    <div class="brand-mark">S</div>
+    <span class="brand-name">Stashwise</span>
+  </div>
+  <div class="top-r">
+    <div class="v-status" id="vStatus">
+      <div class="v-dot"></div>
+      <span id="vStatusTxt">Recording...</span>
+    </div>
+    <div class="sel-wrap">
+      <select class="sel" id="ctrySel" onchange="onCountry(this.value)">
+        <option value="NZ">New Zealand</option>
+        <option value="IN">India</option>
+        <option value="AU" disabled>Australia (soon)</option>
+      </select>
+    </div>
+    <button class="top-btn" id="restBtn" onclick="goHome()">Start over</button>
+  </div>
+</nav>
+
+<!-- ══ LANDING ══ -->
+<div id="pgLand" class="scr">
+  <div class="land-glow"></div><div class="land-grid"></div>
+  <div class="land-body">
+    <div class="hl-wrap">
+      <div class="hl in">Where should your <em>money go?</em></div>
+      <div class="hl">Aapka paisa <em>kahan lagaye?</em></div>
+      <div class="hl">Safe returns, <em>clear reasoning.</em></div>
+      <div class="hl">Smart money. <em>Simply explained.</em></div>
+    </div>
+    <p class="land-sub" id="landSub">Tell us your situation. We find the right path and explain exactly why.</p>
+    <div class="intent-row">
+      <div class="intent-btn" onclick="startFlow('invest')"><span class="intent-icon">🏦</span><span class="intent-label" id="li1">Invest</span><span class="intent-sub" id="ls1">Earn safely</span></div>
+      <div class="intent-btn" onclick="startFlow('borrow')"><span class="intent-icon">💸</span><span class="intent-label" id="li2">Borrow</span><span class="intent-sub" id="ls2">Loans &amp; credit</span></div>
+      <div class="intent-btn" onclick="startFlow('insure')"><span class="intent-icon">🛡️</span><span class="intent-label" id="li3">Insure</span><span class="intent-sub" id="ls3">Protection</span></div>
+      <div class="intent-btn" onclick="startFlow('general')"><span class="intent-icon">🤔</span><span class="intent-label" id="li4">Not sure</span><span class="intent-sub" id="ls4">Help me figure it out</span></div>
+    </div>
+    <p class="land-disc" id="landDisc">Educational guidance only — not regulated financial advice. Rates verified March 2026.</p>
+  </div>
+</div>
+
+<!-- ══ INTAKE ══ -->
+<div id="pgIntake" class="scr">
+  <!-- Left: question flow -->
+  <div class="intake-main">
+    <div class="intake-progress"><div class="intake-progress-fill" id="ipFill"></div></div>
+    <!-- Committed answers strip -->
+    <div class="committed-strip" id="committedStrip"></div>
+    <!-- Active question -->
+    <div class="q-area">
+      <div class="q-step-label" id="qStepLabel"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="q-subtext" id="qSubtext"></div>
+      <div class="q-examples" id="qExamples"></div>
+      <div class="ta-wrap">
+        <textarea id="qTa" class="q-ta" rows="4" placeholder="" oninput="onTaInput()" onkeydown="onTaKey(event)"></textarea>
+        <div class="ta-extracting" id="taExtracting">
+          <div class="ext-dots"><span></span><span></span><span></span></div>
+          <span id="extractingTxt">Understanding your answer...</span>
+        </div>
+      </div>
+      <div class="q-controls">
+        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+          <span>🎙</span><span id="voiceBtnTxt">Speak</span>
+        </button>
+        <button class="next-btn" id="nextBtn" onclick="submitAnswer()">
+          <span id="nextBtnTxt">Continue</span>
+        </button>
+        <button class="skip-btn" id="skipBtn" onclick="skipQuestion()">Skip</button>
+      </div>
+      <div class="q-note" id="qNote">Ctrl+Enter to continue</div>
+    </div>
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="lo-text" id="loTxt">Analysing your profile...</div>
+      <div class="lo-dots"><span></span><span></span><span></span></div>
+      <div class="lo-sub" id="loSub">Matching products and calculating returns</div>
+    </div>
+  </div>
+  <!-- Right: live profile panel -->
+  <div class="side-panel">
+    <div class="sp-title" id="spTitle">What we understand</div>
+    <div class="sp-prog">
+      <div class="sp-prog-row"><span id="spProfLabel">Profile</span><span id="spPct">0%</span></div>
+      <div class="sp-track"><div class="sp-fill" id="spFill" style="width:0%"></div></div>
+    </div>
+    <div class="sp-fields" id="spFields"></div>
+    <div class="sp-signals" id="spSigs" style="display:none">
+      <div class="sp-sig-title" id="spSigTitle">Insights</div>
+      <div id="spSigList"></div>
+    </div>
+    <button class="sp-cta" id="spCta" onclick="triggerAnalysis()">Get my recommendation &rarr;</button>
+  </div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div id="pgRes" class="scr">
+  <div class="res-nav">
+    <button class="res-back" onclick="backToIntake()">Back</button>
+    <span class="res-label" id="resLabel">Assessment</span>
+    <button class="res-tts" id="resTts" onclick="toggleTts()">🔊 <span id="resTtsTxt">Read aloud</span></button>
+  </div>
+  <div id="resContent"></div>
+</div>
+
+<script>
+'use strict';
+
+/* ╔══════════════════════════════════════════════╗
+   ║  API CONFIG  – keys live in server env only  ║
+   ╚══════════════════════════════════════════════╝ */
+var API_BASE         = '';          // empty = same origin (the proxy server)
+var ELEVENLABS_VOICE = 'EXAVITQu4vr4xnSDxMaL';
+
+/* ╔══════════════════════════════════════════════╗
+   ║  FIELD DEFINITIONS                           ║
+   ╚══════════════════════════════════════════════╝ */
+/* ╔══════════════════════════════════════════════╗
+   ║  PANEL FIELDS (what shows in the side panel) ║
+   ╚══════════════════════════════════════════════╝ */
+var FIELDS = {
+  invest:  [{key:'amount',label:'Amount',hi:'राशि'},{key:'goal',label:'Goal',hi:'लक्ष्य'},{key:'timeline',label:'Timeline',hi:'अवधि'},{key:'liquidity',label:'Access needed',hi:'निकासी'},{key:'risk',label:'Risk pref.',hi:'जोखिम'},{key:'taxRate',label:'Tax rate',hi:'कर दर'},{key:'employment',label:'Employment',hi:'रोजगार'}],
+  borrow:  [{key:'loanAmt',label:'Loan amount',hi:'ऋण राशि'},{key:'purpose',label:'Purpose',hi:'उद्देश्य'},{key:'income',label:'Monthly income',hi:'मासिक आय'},{key:'employment',label:'Employment',hi:'रोजगार'},{key:'expenses',label:'Expenses',hi:'खर्च'},{key:'existingDebt',label:'Existing debt',hi:'मौजूदा कर्ज'}],
+  insure:  [{key:'coverType',label:'Cover type',hi:'कवर प्रकार'},{key:'life',label:'Dependants',hi:'आश्रित'},{key:'income',label:'Income',hi:'आय'},{key:'existing',label:'Existing cover',hi:'मौजूदा कवर'}],
+  general: [{key:'amount',label:'Amount',hi:'राशि'},{key:'goal',label:'Goal',hi:'लक्ष्य'},{key:'timeline',label:'Timeline',hi:'अवधि'},{key:'risk',label:'Risk',hi:'जोखिम'},{key:'employment',label:'Employment',hi:'रोजगार'}]
+};
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  QUESTION SEQUENCES                                          ║
+   ║  One focused question per step. Each targets specific fields. ║
+   ║  Order matters: amount first, then goal, then constraints.   ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+var QUESTIONS = {
+  NZ: {
+    invest: [
+      {
+        id:'q_amount', fieldsTargeted:['amount'],
+        step:'First things first',
+        text:'How much money are we talking about?',
+        sub:'Just a rough number is totally fine.',
+        examples:[
+          'About $20,000',
+          'Around $5,000 - not a huge amount',
+          'Roughly $150,000',
+          'Not sure exactly - somewhere between $30k and $50k',
+          'About $500 a month I want to put away regularly'
+        ]
+      },
+      {
+        id:'q_goal', fieldsTargeted:['goal','liquidity'],
+        step:'What it is for',
+        text:'What are you trying to do with this money?',
+        sub:'Tell us the goal and whether you might need to get to it in a hurry.',
+        examples:[
+          'Emergency fund - I need to be able to access it quickly if something goes wrong',
+          'Just parking it while I decide what to do - no rush but might need it',
+          'Saving for a house deposit in 2-3 years, do not need it before then',
+          'Making it work as hard as possible - I will not need it for at least a year',
+          'No specific goal, just tired of it sitting in a bank account earning nothing'
+        ]
+      },
+      {
+        id:'q_timeline', fieldsTargeted:['timeline'],
+        step:'How long',
+        text:'How long can you comfortably leave it invested?',
+        sub:'Be honest - locking money away when you might need it causes problems.',
+        examples:[
+          'At least 12 months, probably longer',
+          '6 months maximum - I might need it for something',
+          '2 to 3 years easily',
+          'Not sure - could be 6 months, could be 2 years',
+          'I need it to stay accessible - within a few days if needed'
+        ]
+      },
+      {
+        id:'q_risk', fieldsTargeted:['risk'],
+        step:'Safety vs return',
+        text:'How do you feel about risk on this money?',
+        sub:'All options here are relatively safe - this is about degree.',
+        examples:[
+          'Safety first - I cannot afford to lose any of it',
+          'Government-backed only - nothing with any risk at all',
+          'A registered bank is fine, I just want a decent rate',
+          'I am open to smaller banks if the rate is meaningfully better',
+          'Highest possible return within safe, regulated options'
+        ]
+      },
+      {
+        id:'q_tax', fieldsTargeted:['taxRate','employment'],
+        step:'Tax situation',
+        text:'What is your tax situation? This changes which option wins.',
+        sub:'Your PIR rate or rough income helps us calculate your actual after-tax return. No idea is a valid answer.',
+        examples:[
+          'I have no idea - just show me what the options look like',
+          'I think I am on 17.5% PIR - income around $40k',
+          'I am on the top 28% PIR - earning over $48k',
+          'I am on the 33% marginal rate - I have heard PIE funds are better for me',
+          'Retired, not much income now, probably 10.5% PIR',
+          'Self-employed, income varies a lot - not sure where I land'
+        ]
+      }
+    ],
+    borrow: [
+      {
+        id:'q_loanamt', fieldsTargeted:['loanAmt'],
+        step:'The loan amount',
+        text:'How much are you looking to borrow?',
+        sub:'A rough figure is fine.',
+        examples:[
+          'Around $15,000',
+          'Somewhere between $5,000 and $10,000',
+          '$25,000 - I have a specific project in mind',
+          'Not sure yet - maybe $10-20k depending on what I qualify for',
+          'As little as possible - just enough to cover what I need'
+        ]
+      },
+      {
+        id:'q_purpose', fieldsTargeted:['purpose'],
+        step:'What it is for',
+        text:'What do you need the loan for?',
+        sub:'This affects which lenders suit you and the advice we give.',
+        examples:[
+          'A car - second hand, roughly $15k',
+          'Consolidating credit card debt into one lower payment',
+          'Home renovation - new kitchen or bathroom',
+          'Starting a small business - buying equipment',
+          'A holiday or personal expense',
+          'Medical costs',
+          'Not sure yet - just exploring options'
+        ]
+      },
+      {
+        id:'q_income', fieldsTargeted:['income','employment'],
+        step:'Your income',
+        text:'Tell us about your income and work situation.',
+        sub:'Variable or irregular income is fine - just describe it honestly.',
+        examples:[
+          'Permanent job, earn about $65k a year',
+          'Self-employed for 3 years - roughly $5k a month but varies quite a bit',
+          'Casual work, about $2,500 a month on average - not super consistent',
+          'Part-time, around $1,800 a month, I live at home',
+          'On a benefit, about $1,400 a month - I know that limits me',
+          'Two incomes - partner and I earn about $120k combined'
+        ]
+      },
+      {
+        id:'q_expenses', fieldsTargeted:['expenses','existingDebt'],
+        step:'Your outgoings',
+        text:'What are your main regular expenses each month?',
+        sub:'Rent or mortgage, existing loan payments, general living costs.',
+        examples:[
+          'Rent $1,600, no other loans, general living maybe $1,200',
+          'Mortgage $2,200 a month, no other debt, living costs about $1,500',
+          'No rent (live at home), one credit card, spend about $800 a month',
+          'Rent $1,400, car finance $320 a month, about $1,000 other costs',
+          'Not great with tracking - roughly $3,000 a month on everything'
+        ]
+      }
+    ],
+    insure: [
+      {
+        id:'q_protect', fieldsTargeted:['coverType','life'],
+        step:'What to protect',
+        text:'What are you trying to protect against?',
+        sub:'Tell us your situation - we will figure out the right type of cover.',
+        examples:[
+          'I have a young family - I need them to be okay financially if I died',
+          'I am self-employed with no sick pay - if I could not work I would be in trouble fast',
+          'Just bought a house - worried about keeping up the mortgage if I lost my job or got sick',
+          'I want to understand all my options - starting from scratch with no idea',
+          'Partner and two kids who depend on my income entirely'
+        ]
+      },
+      {
+        id:'q_income_ins', fieldsTargeted:['income','employment'],
+        step:'Your income',
+        text:'What do you earn, and how do you earn it?',
+        sub:'Helps us size the right cover amount.',
+        examples:[
+          'Salary of about $85k a year in a permanent job',
+          'Self-employed, varies - good year maybe $90k, bad year $60k',
+          'About $60k salary, partner earns $50k as well',
+          '$120k salary - sole earner, partner looks after the kids',
+          'I work part-time, around $30k. Partner earns the majority'
+        ]
+      },
+      {
+        id:'q_existing', fieldsTargeted:['existing'],
+        step:'What you have already',
+        text:'Do you have any insurance already in place?',
+        sub:'Even rough details help us spot gaps.',
+        examples:[
+          'Nothing at all - completely uninsured',
+          'Some life cover through work but no idea how much',
+          'An old policy from years ago - probably not enough now with a mortgage and kids',
+          'Have health insurance through work but nothing else',
+          'Not sure exactly what I have - need to figure that out'
+        ]
+      }
+    ],
+    general: [
+      {
+        id:'q_situation', fieldsTargeted:['goal','amount'],
+        step:'What is going on',
+        text:'What is on your mind financially right now?',
+        sub:'No financial knowledge required - just describe it in plain terms.',
+        examples:[
+          'I have some savings doing nothing and feel like I should be smarter with them',
+          'Just got a pay rise and want to start making better decisions with money',
+          'Trying to decide whether to invest or pay off my mortgage faster',
+          'Got a lump sum - inheritance or bonus - and want to handle it properly',
+          'Want to buy a house in a few years and not sure how to save towards it'
+        ]
+      },
+      {
+        id:'q_amount_gen', fieldsTargeted:['amount','timeline'],
+        step:'The numbers',
+        text:'Give us a rough sense of the amount and timeframe involved.',
+        sub:'Does not need to be precise - ballpark is fine.',
+        examples:[
+          'About $20,000, could leave it for a year or more',
+          'Maybe $500 spare each month, thinking 2-3 year horizon',
+          'Around $40k - not sure exactly when I might need it',
+          'Honestly not much yet - a few thousand to start somewhere',
+          'About $80k from selling a car, no immediate plans for it'
+        ]
+      },
+      {
+        id:'q_risk_gen', fieldsTargeted:['risk','employment'],
+        step:'Your priorities',
+        text:'What matters most to you - safety, returns, or being able to access it?',
+        sub:'And tell us a bit about your work situation.',
+        examples:[
+          'Safety first - permanently employed, just want steady reliable returns',
+          'Best possible return, employed and stable, do not need it for years',
+          'Flexibility is key - self-employed so income varies and I might need it',
+          'Somewhere in the middle - decent return but I need to sleep at night',
+          'Retired - living off savings so I cannot afford any risk at all'
+        ]
+      }
+    ]
+  },
+  IN: {
+    invest: [
+      {
+        id:'q_amount', fieldsTargeted:['amount'],
+        step:'Pehle ye batayein',
+        text:'Kitna paisa invest karna chahte hain?',
+        sub:'Rough amount bhi bilkul theek hai.',
+        examples:[
+          'Lagbhag 5 lakh rupaye',
+          'Sirf 50,000 se shuruat karni hai',
+          '10-15 lakh ke beech mein',
+          'Har mahine 10,000 lagana chahta hoon',
+          'Exact pata nahi - 2 se 5 lakh ke beech mein'
+        ]
+      },
+      {
+        id:'q_goal', fieldsTargeted:['goal','liquidity'],
+        step:'Kya chahiye',
+        text:'Is paise se kya karna chahte hain?',
+        sub:'Lakshya batayein aur ye bhi ke kya kabhi jaldi nikalna pad sakta hai.',
+        examples:[
+          'Emergency fund banana hai - jaldi nikal sakoon zarurat padne par',
+          'Ek saal ke liye rakhna hai, phir ghar ke liye use karoonga',
+          'Long term investment - 3-5 saal, jaldi zarurat nahi hai',
+          'Sirf FD rates compare karne hain - kahan zyada milega',
+          'Savings account mein baith ke kuch nahi kar raha, kuch behtar chahiye'
+        ]
+      },
+      {
+        id:'q_timeline', fieldsTargeted:['timeline'],
+        step:'Kitne time ke liye',
+        text:'Kitne samay ke liye yeh paisa laga sakte hain?',
+        sub:'Sachchi baat batayein - zarurat padne par nahi nikal sakte toh problem hogi.',
+        examples:[
+          'Kam se kam 1 saal, shayad zyada bhi',
+          '6 mahine se zyada nahi - zarurat pad sakti hai',
+          '2-3 saal aaram se',
+          'Pakka nahi - 6 mahine bhi ho sakta hai, 2 saal bhi',
+          'Jab chahoon nikal sakoon - liquid chahiye'
+        ]
+      },
+      {
+        id:'q_risk', fieldsTargeted:['risk'],
+        step:'Suraksha ya return',
+        text:'Iss paisa par kitna risk le sakte hain?',
+        sub:'Yahan sab options relatively safe hain - degree ki baat hai.',
+        examples:[
+          'Bilkul nahi - ek bhi rupaya nahi doobna chahiye',
+          'Sirf government ya PSU bank - fully safe',
+          'Bade private bank theek hain, bas achha rate chahiye',
+          'Zyada rate ke liye chote bank ya NBFC bhi dekh sakta hoon',
+          'Maximum return chahiye safe options ke andar'
+        ]
+      },
+      {
+        id:'q_tax', fieldsTargeted:['taxRate','employment'],
+        step:'Tax situation',
+        text:'Aapka income tax situation kya hai?',
+        sub:'Ye jaanna zaroori hai taaki actual post-tax return calculate kar sakein.',
+        examples:[
+          'Kuch pata nahi tax ke baare mein - seedha options dikhao',
+          'Naukri mein hoon, saal mein 8-9 lakh, new tax regime mein hoon',
+          '15 lakh salary, 30% tax bracket mein hoon',
+          'Retired hoon, income kaafi kam hai ab',
+          'Self-employed hoon, income irregular rehti hai',
+          '60 saal se upar hoon - senior citizen hoon'
+        ]
+      }
+    ],
+    borrow: [
+      {
+        id:'q_loanamt', fieldsTargeted:['loanAmt'],
+        step:'Loan ki rakam',
+        text:'Kitna loan chahiye?',
+        sub:'Rough amount batayein.',
+        examples:[
+          'Lagbhag 3 lakh',
+          '1 se 2 lakh ke beech',
+          '5 lakh - ek specific kaam ke liye',
+          'Pakka nahi - qualify karne par depend karega',
+          'Kam se kam jitna mil sake'
+        ]
+      },
+      {
+        id:'q_purpose', fieldsTargeted:['purpose'],
+        step:'Kis liye',
+        text:'Loan kisliye chahiye?',
+        sub:'Isse hum best option suggest kar sakenge.',
+        examples:[
+          'Car khareedni hai',
+          'Credit card ka bakaaya ek jagah consolidate karna hai',
+          'Ghar ki renovation ke liye',
+          'Business shuru karna hai - equipment khareedni hai',
+          'Medical emergency ke liye',
+          'Bacche ki padhai ke fees'
+        ]
+      },
+      {
+        id:'q_income', fieldsTargeted:['income','employment'],
+        step:'Aapki income',
+        text:'Apni aay aur kaam ke baare mein batayein.',
+        sub:'Irregular income bhi theek hai - bas sachchi baat batayein.',
+        examples:[
+          'Permanent naukri hai, 50,000 per month',
+          'Self-employed hoon 4 saal se - kabhi 80,000 kabhi 40,000',
+          'Government job, 45,000 per month',
+          'Part-time kaam, 20,000 ke aaspaas',
+          'Do log kamate hain ghar mein - combined 1.2 lakh per month'
+        ]
+      },
+      {
+        id:'q_expenses', fieldsTargeted:['expenses','existingDebt'],
+        step:'Kharche',
+        text:'Har mahine main kharche kya hain?',
+        sub:'Kiraya ya home loan, existing EMIs, general kharche.',
+        examples:[
+          'Kiraya 12,000, koi loan nahi, kharche lagbhag 15,000',
+          'Home loan EMI 22,000, koi aur loan nahi',
+          'Ghar pe rehta hoon, ek credit card hai, 8,000 kharche',
+          'Car ki EMI 7,000, ek personal loan 4,500 - total 11,500',
+          'Track nahi karta theek se - lagbhag 30,000 sab milake'
+        ]
+      }
+    ],
+    insure: [
+      {
+        id:'q_protect', fieldsTargeted:['coverType','life'],
+        step:'Kya protect karna hai',
+        text:'Kisse protect karna chahte hain?',
+        sub:'Apni situation batayein - hum sahi cover type suggest karenge.',
+        examples:[
+          'Chota bachcha hai - agar mujhe kuch ho gaya toh family ko pareshani na ho',
+          'Self-employed hoon, bimaar hoon toh income band - kya option hai?',
+          'Home loan liya hai - job gayi toh EMI kaise bharoonga?',
+          'Bilkul nahi pata - scratch se samajhna chahta hoon',
+          'Bachche hain, wife ghar pe hai - unka future secure karna hai'
+        ]
+      },
+      {
+        id:'q_income_ins', fieldsTargeted:['income','employment'],
+        step:'Aapki income',
+        text:'Kitna kamate hain aur kaise?',
+        sub:'Isse sahi cover amount suggest kar sakenge.',
+        examples:[
+          'Sarkari naukri, 8 lakh saal mein',
+          'Self-employed, achhe saal 15 lakh, bure saal 8 lakh',
+          'Private job 12 lakh, wife bhi 8 lakh kamaati hai',
+          '20 lakh salary, akele kamaane wala hoon',
+          'Part-time kaam, 3-4 lakh saal mein'
+        ]
+      },
+      {
+        id:'q_existing', fieldsTargeted:['existing'],
+        step:'Abhi kya hai',
+        text:'Abhi koi insurance hai aapke paas?',
+        sub:'Rough idea bhi kaafi hai.',
+        examples:[
+          'Kuch bhi nahi - poori tarah uninsured hoon',
+          'Company mein group insurance hai lekin personal kuch nahi',
+          'LIC ki purani policy hai par kaafi nahi lagti',
+          'Health insurance hai, life nahi',
+          'Pakka nahi kya hai - pehle ye samajhna hai'
+        ]
+      }
+    ],
+    general: [
+      {
+        id:'q_situation', fieldsTargeted:['goal','amount'],
+        step:'Kya chal raha hai',
+        text:'Paison ke baare mein kya soch rahe hain aajkal?',
+        sub:'Financial knowledge ki zarurat nahi - seedha batayein.',
+        examples:[
+          'Kuch paisa pada hai, kuch karna chahta hoon',
+          'Naukri mein increment mila, paisa theek se lagana seekhna chahta hoon',
+          'Invest karoon ya pehle loan bhugataoon?',
+          'Kuch paisa mila hai, sahi jagah lagana chahta hoon',
+          '3-4 saal mein ghar khareedna hai - kaise plan karoon'
+        ]
+      },
+      {
+        id:'q_amount_gen', fieldsTargeted:['amount','timeline'],
+        step:'Kitna aur kab tak',
+        text:'Rough mein - kitna paisa hai aur kab tak ke liye?',
+        sub:'Exact nahi hona chahiye - andaza bhi theek hai.',
+        examples:[
+          'Lagbhag 5 lakh, 1 saal ke liye rakh sakta hoon',
+          'Har mahine 5,000 bachaata hoon, 2-3 saal ka plan',
+          '10 lakh ke aaspaas, kab chahiye pakka nahi',
+          'Abhi zyada nahi - 50,000 se shuruat karni hai',
+          'Options samajhna chahta hoon pehle, phir decide karoonga'
+        ]
+      },
+      {
+        id:'q_risk_gen', fieldsTargeted:['risk','employment'],
+        step:'Priorities',
+        text:'Aapko kya zyada important lagta hai - safety, return, ya jab chahiye nikal sakoon?',
+        sub:'Aur apni job/kaam ke baare mein thoda batayein.',
+        examples:[
+          'Safety sabse pehle - naukri pakki hai, bas reliable return chahiye',
+          'Maximum return chahiye, stable income hai, 3 saal ke liye lock kar sakta hoon',
+          'Flexibility key hai - self-employed hoon aur kabhi bhi zarurat pad sakti hai',
+          'Beech ka raasta - decent return aur chain bhi',
+          'Retired hoon - bilkul risk nahi le sakta'
+        ]
+      }
+    ]
+  }
+};
+
+/* ╔══════════════════════════════════════════════╗
+   ║  THEMATIC QUESTIONS                          ║
+   ║  Each covers multiple fields  -  not 1:1 mapping ║
+   ╚══════════════════════════════════════════════╝ */
+
+
+/* ╔══════════════════════════════════════════════╗
+   ║  I18N                                        ║
+   ╚══════════════════════════════════════════════╝ */
+var T = {
+  NZ: {
+    landSub:'Tell us your situation. We find the right path and explain exactly why.',
+    landDisc:'Educational guidance only. Not regulated financial advice. Verify rates with providers.',
+    li1:'Invest', ls1:'Earn safely', li2:'Borrow', ls2:'Loans & credit',
+    li3:'Insure', ls3:'Protection', li4:'Not sure', ls4:'Help me figure it out',
+    spTitle:'What we understand', spProfLabel:'Profile', spSigTitle:'Insights',
+    nextBtn:'Continue', voiceBtn:'Speak', skipBtn:'Skip',
+    loTxt:'Analysing your profile...', loSub:'Matching products and calculating returns',
+    qNote:'Ctrl+Enter to continue', extractingTxt:'Understanding your answer...',
+    vStatusTxt:'Recording...', vStatusDone:'Transcribing...',
+    resLabels:{invest:'Investment Assessment - NZ', borrow:'Loan Assessment - NZ', insure:'Insurance Assessment - NZ', general:'Financial Assessment - NZ'},
+    disclaimer:'Rates sourced from public provider information, last verified March 2026 (see individual product cards). Rates change — always confirm directly with the provider before acting. Stashwise provides educational guidance only and is not a registered financial adviser under the Financial Advisers Act 2008. For personalised advice, consult a licensed financial adviser.',
+    hlPhrases:['Where should your <em>money go?</em>','Safe returns, <em>clear reasoning.</em>','Smart money. <em>Simply explained.</em>','Your best financial <em>path forward.</em>']
+  },
+  IN: {
+    landSub:'apni sthiti hame batae. hum sahi rasta khojenge aur clearly batayenge kyo.',
+    landDisc:'Shaikshik margdarshan keval. Viniyamit vittiy salah nahi.',
+    li1:'Nivesh', ls1:'Surakshit kamai', li2:'Rin', ls2:'Loan aur credit',
+    li3:'Bima', ls3:'Suraksha', li4:'Pakka nahi', ls4:'Samajhne me help karo',
+    spTitle:'Ham kya samjhe', spProfLabel:'Profile', spSigTitle:'Antardrishti',
+    nextBtn:'Aage', voiceBtn:'Bolen', skipBtn:'Skip karo',
+    loTxt:'Aapka aaklan ban raha hai...', loSub:'Products milaa rahe hain',
+    qNote:'Ctrl+Enter se aage badhein', extractingTxt:'Aapka jawab samajh rahe hain...',
+    vStatusTxt:'Recording...', vStatusDone:'Transcribing...',
+    resLabels:{invest:'Nivesh Aaklan - Bharat', borrow:'Rin Aaklan - Bharat', insure:'Bima Aaklan - Bharat', general:'Vittiy Aaklan - Bharat'},
+    disclaimer:'Darein March 2026 tak saavedhan saarvjanik srot se li gayi hain. Kaaravaai se pehle seedha provider ke saath nirikhit darein ki pushti karen. Stashwise keval shaikshik margdarshan pradaan karta hai — yeh SEBI/RBI ke tahat panjikrit vittiy salahkar nahi hai. Vyaktigat salah ke liye panjikrit vittiy visheshagya se sampark karen.',
+    hlPhrases:['Aapka paisa <em>kahan lagaye?</em>','Surakshit returns, <em>saaph jawab.</em>','Smart money. <em>Aasaan bhasha mein.</em>','Aapka sabse <em>behtar raasta.</em>']
+  }
+};
+
+/* ╔══════════════════════════════════════════════╗
+   ║  STATE                                       ║
+   ╚══════════════════════════════════════════════╝ */
+var G = {
+  country: 'NZ',
+  intent:  null,
+  profile: {},        // extracted structured fields
+  signals: [],        // soft signals
+  history: [],        // [{role,content}] for interviewer Claude
+  questionCount: 0,   // how many Q&A turns so far
+  committed: [],      // committed answer summaries
+  busy: false,
+  mediaRecorder: null,
+  audioChunks: [],
+  isRecording: false,
+  ttsAudio: null,
+  ttsActive: false,
+  fullResult: null
+};
+
+/* ╔══════════════════════════════════════════════╗
+   ║  PRODUCTS                                    ║
+   ╚══════════════════════════════════════════════╝ */
+/* Products embedded directly - no fetch needed, works with file:// and any server */
+var PRODUCTS = {
+  NZ: {
+    investments: [
+      {id:'nz-td-anz-6m', provider:'ANZ', product:'Term Deposit 6 months',
+       category:'term_deposit', rate_pa:3.45, min_amount:10000, term_months:6,
+       liquidity:'locked', risk:'very_low', credit_rating:'AA-',
+       risk_note:'NZ largest bank. RBNZ regulated. NZ Depositor Compensation Scheme up to $100,000.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Rate reduction penalty. 31 days notice required.',
+       url:'https://www.anz.co.nz/personal/investments/term-deposits/', last_verified:'2026-03-21'},
+      {id:'nz-td-anz-12m', provider:'ANZ', product:'Term Deposit 12 months',
+       category:'term_deposit', rate_pa:3.70, min_amount:10000, term_months:12,
+       liquidity:'locked', risk:'very_low', credit_rating:'AA-',
+       risk_note:'NZ largest bank. RBNZ regulated. Depositor Compensation Scheme.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Rate reduction penalty. 31 days notice required.',
+       url:'https://www.anz.co.nz/personal/investments/term-deposits/', last_verified:'2026-03-21'},
+      {id:'nz-td-anz-2y', provider:'ANZ', product:'Term Deposit 2 years',
+       category:'term_deposit', rate_pa:4.10, min_amount:10000, term_months:24,
+       liquidity:'locked', risk:'very_low', credit_rating:'AA-',
+       risk_note:'ANZ best long-term rate among Big 5 as of March 2026.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Rate reduction penalty applies.',
+       url:'https://www.anz.co.nz/personal/investments/term-deposits/', last_verified:'2026-03-21'},
+      {id:'nz-td-westpac-12m', provider:'Westpac NZ', product:'Term Deposit 12 months',
+       category:'term_deposit', rate_pa:3.75, min_amount:5000, term_months:12,
+       liquidity:'locked', risk:'very_low', credit_rating:'AA-',
+       risk_note:'Westpac NZ highest 12-month rate among Big 5 banks as of 21 March 2026.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.westpac.co.nz/kiwisaver-investments/term-deposits-pie-investments/', last_verified:'2026-03-21'},
+      {id:'nz-td-bnz-12m', provider:'BNZ', product:'Term Deposit 12 months',
+       category:'term_deposit', rate_pa:3.60, min_amount:2000, term_months:12,
+       liquidity:'locked', risk:'very_low', credit_rating:'AA-',
+       risk_note:'Major bank, RBNZ regulated. Lowest minimum deposit among Big 5.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.bnz.co.nz/personal-banking/investments/term-deposits', last_verified:'2026-03-21'},
+      {id:'nz-td-asb-12m', provider:'ASB', product:'Term Deposit 12 months',
+       category:'term_deposit', rate_pa:3.50, min_amount:5000, term_months:12,
+       liquidity:'locked', risk:'very_low', credit_rating:'AA-',
+       risk_note:'Major bank, RBNZ regulated. Depositor Compensation Scheme.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Penalty rate applies.',
+       url:'https://www.asb.co.nz/investments/term-investments', last_verified:'2026-03-21'},
+      {id:'nz-td-kiwibank-12m', provider:'Kiwibank', product:'Term Deposit 12 months',
+       category:'term_deposit', rate_pa:3.55, min_amount:10000, term_months:12,
+       liquidity:'locked', risk:'very_low', credit_rating:'A',
+       risk_note:'NZ government-owned bank. Depositor Compensation Scheme.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.kiwibank.co.nz/personal-banking/investments/term-deposits/', last_verified:'2026-03-21'},
+      {id:'nz-td-heartland-12m', provider:'Heartland Bank', product:'Term Deposit 12 months',
+       category:'term_deposit', rate_pa:3.60, min_amount:1000, term_months:12,
+       liquidity:'locked', risk:'low', credit_rating:'BBB',
+       risk_note:'Registered NZ bank. Depositor Compensation Scheme up to $100,000. Lower $1,000 minimum. Slightly higher risk than Big 5.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.heartland.co.nz/savings/term-deposits', last_verified:'2026-03-21'},
+      {id:'nz-td-heartland-18m', provider:'Heartland Bank', product:'Term Deposit 18 months',
+       category:'term_deposit', rate_pa:3.85, min_amount:1000, term_months:18,
+       liquidity:'locked', risk:'low', credit_rating:'BBB',
+       risk_note:'One of the highest 18-month rates from a registered NZ bank as of March 2026. Depositor Compensation Scheme.',
+       tax_treatment:'Interest taxable at marginal rate. RWT withheld at source.',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.heartland.co.nz/savings/term-deposits', last_verified:'2026-03-21'},
+      {id:'nz-pie-anz', provider:'ANZ', product:'ANZ Cash PIE Fund',
+       category:'pie_fund', rate_pa:3.50, min_amount:1, term_months:null,
+       liquidity:'high', risk:'very_low', credit_rating:'AA-',
+       risk_note:'PIE tax structure. Capital stable. At-call liquidity. No minimum hold period.',
+       tax_treatment:'Taxed at PIR rate, capped at 28%. If you earn over $70,000 (33% marginal), PIE beats term deposits on after-tax return even at lower headline rate.',
+       early_withdrawal:'At call, no penalty, no notice required.',
+       url:'https://www.anz.co.nz/personal/investments/pie-funds/', last_verified:'2026-03-21',
+       highlight:'Best for 33% taxpayers who need access to funds'},
+      {id:'nz-noticeSaver-kiwibank', provider:'Kiwibank', product:'Notice Saver (PIE)',
+       category:'notice_saver', rate_pa:3.75, min_amount:1, term_months:null,
+       liquidity:'medium', risk:'very_low', credit_rating:'A',
+       risk_note:'PIE structure. Government-owned bank. 32-day notice for withdrawals.',
+       tax_treatment:'Taxed at PIR rate (max 28%). Tax advantage for higher earners.',
+       early_withdrawal:'32-day notice required. Cannot access sooner.',
+       url:'https://www.kiwibank.co.nz/personal-banking/savings/notice-saver/', last_verified:'2026-03-21'}
+    ],
+    loans: [
+      {id:'nz-loan-asb', provider:'ASB', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:12.95, rate_pa_max:19.95, rate_pa_typical:14.95,
+       fees:{establishment:150, monthly:0}, min_amount:3000, max_amount:75000,
+       min_term_months:6, max_term_months:84,
+       eligibility:'NZ citizen or permanent resident. Regular income. Credit check required.',
+       suitable_for_variable_income:false,
+       url:'https://www.asb.co.nz/loans/personal-loans', last_verified:'2025-03'},
+      {id:'nz-loan-anz', provider:'ANZ', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:13.90, rate_pa_max:20.95, rate_pa_typical:15.90,
+       fees:{establishment:150, monthly:0}, min_amount:3000, max_amount:40000,
+       min_term_months:6, max_term_months:84,
+       eligibility:'NZ citizen or permanent resident. Employed or regular income.',
+       suitable_for_variable_income:false,
+       url:'https://www.anz.co.nz/personal/loans/personal-loans/', last_verified:'2025-03'},
+      {id:'nz-loan-bnz', provider:'BNZ', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:12.95, rate_pa_max:19.95, rate_pa_typical:14.95,
+       fees:{establishment:100, monthly:0}, min_amount:2000, max_amount:50000,
+       min_term_months:6, max_term_months:60,
+       eligibility:'NZ citizen or permanent resident. Regular income required.',
+       suitable_for_variable_income:false,
+       url:'https://www.bnz.co.nz/personal-banking/loans/personal-loan', last_verified:'2025-03'},
+      {id:'nz-loan-westpac', provider:'Westpac NZ', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:13.95, rate_pa_max:22.95, rate_pa_typical:15.95,
+       fees:{establishment:150, monthly:0}, min_amount:2000, max_amount:50000,
+       min_term_months:6, max_term_months:60,
+       eligibility:'18+ NZ resident. Employed with regular income.',
+       suitable_for_variable_income:false,
+       url:'https://www.westpac.co.nz/loans/personal-loan/', last_verified:'2025-03'},
+      {id:'nz-loan-avanti', provider:'Avanti Finance', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:14.95, rate_pa_max:29.95, rate_pa_typical:21.95,
+       fees:{establishment:250, monthly:10}, min_amount:1000, max_amount:50000,
+       min_term_months:3, max_term_months:84,
+       eligibility:'Specialises in non-standard borrowers. Self-employed welcome. Irregular income considered.',
+       suitable_for_variable_income:true,
+       url:'https://www.avantifinance.co.nz/personal-loans', last_verified:'2025-03'},
+      {id:'nz-loan-gem', provider:'Gem by Latitude', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:12.69, rate_pa_max:27.99, rate_pa_typical:19.99,
+       fees:{establishment:240, monthly:10}, min_amount:1000, max_amount:40000,
+       min_term_months:6, max_term_months:60,
+       eligibility:'18+ NZ resident. Wider income types accepted including self-employed.',
+       suitable_for_variable_income:true,
+       url:'https://www.gemfinance.co.nz/loans/personal-loans/', last_verified:'2025-03'}
+    ],
+    insurance: [
+      {id:'nz-ins-life-asteron', provider:'Asteron Life', product:'Life Insurance',
+       category:'life_insurance', indicative_monthly_premium_30yo:25, coverage_typical:'Up to $1M+',
+       key_features:['Level or stepped premiums','Terminal illness benefit included','Waiver of premium option'],
+       eligibility:'NZ residents up to age 75. Medical underwriting required.',
+       note:'Premium varies by age, health, sum insured.',
+       url:'https://www.asteronlife.co.nz/', last_verified:'2025-03'},
+      {id:'nz-ins-income-aia', provider:'AIA NZ', product:'Income Protection',
+       category:'income_protection', indicative_monthly_premium_30yo:60, coverage_typical:'Up to 75% of income',
+       key_features:['2-year or to-age-65 benefit period','Agreed or indemnity value','Waiting periods 4-52 weeks'],
+       eligibility:'NZ residents in paid employment. Medical underwriting required.',
+       note:'Self-employed particularly benefit. Premiums tax-deductible if income is taxable.',
+       url:'https://www.aia.co.nz/en/individuals/products/income-protection.html', last_verified:'2025-03'},
+      {id:'nz-ins-trauma-partners', provider:'Partners Life', product:'Trauma / Critical Illness',
+       category:'trauma_insurance', indicative_monthly_premium_30yo:35, coverage_typical:'$100k-$500k lump sum',
+       key_features:['Covers 40+ trauma events','Heart attack, stroke, cancer included','Standalone or with life cover'],
+       eligibility:'NZ residents. Medical underwriting required.',
+       note:'Lump sum on diagnosis of covered condition.',
+       url:'https://www.partnerslife.co.nz/', last_verified:'2025-03'}
+    ]
+  },
+  IN: {
+    investments: [
+      {id:'in-fd-sbi-1y', provider:'State Bank of India (SBI)', product:'Fixed Deposit 1 year',
+       category:'fixed_deposit', rate_pa:6.80, rate_pa_senior:7.30, min_amount:1000, term_months:12,
+       liquidity:'locked', risk:'very_low',
+       risk_note:'Government-owned. Largest bank in India. Sovereign backing. DICGC insured up to Rs 5 lakh.',
+       tax_treatment:'Interest taxable at slab rate. TDS at 10% if annual interest exceeds Rs 40,000 (Rs 1L for seniors). Quarterly TDS reduces effective compounding.',
+       early_withdrawal:'Penalty applies.',
+       url:'https://sbi.co.in/web/personal-banking/investments-deposits/deposits/term-deposits', last_verified:'2026-03-22'},
+      {id:'in-fd-hdfc-1y', provider:'HDFC Bank', product:'Fixed Deposit 1 year',
+       category:'fixed_deposit', rate_pa:7.00, rate_pa_senior:7.50, min_amount:5000, term_months:12,
+       liquidity:'locked', risk:'very_low',
+       risk_note:'Largest private sector bank. RBI regulated. DICGC insured up to Rs 5 lakh.',
+       tax_treatment:'Interest taxable at slab rate. TDS at 10% if annual interest exceeds Rs 40,000 (Rs 1L for seniors).',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.hdfcbank.com/personal/save/deposits/fixed-deposit', last_verified:'2026-03-22'},
+      {id:'in-fd-icici-1y', provider:'ICICI Bank', product:'Fixed Deposit 1 year',
+       category:'fixed_deposit', rate_pa:6.90, rate_pa_senior:7.40, min_amount:10000, term_months:12,
+       liquidity:'locked', risk:'very_low',
+       risk_note:'Major private bank. RBI regulated. DICGC insured up to Rs 5 lakh.',
+       tax_treatment:'Interest taxable at slab rate. TDS at 10% if annual interest exceeds Rs 40,000 (Rs 1L for seniors).',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.icicibank.com/personal-banking/deposits/fixed-deposit', last_verified:'2026-03-22'},
+      {id:'in-fd-idfc-1y', provider:'IDFC First Bank', product:'Fixed Deposit 1 year',
+       category:'fixed_deposit', rate_pa:6.50, rate_pa_senior:7.00, min_amount:10000, term_months:12,
+       liquidity:'locked', risk:'low',
+       risk_note:'Scheduled commercial bank. RBI regulated. DICGC insured up to Rs 5 lakh. Smaller than SBI/HDFC/ICICI.',
+       tax_treatment:'Interest taxable at slab rate. TDS at 10% above threshold.',
+       early_withdrawal:'Penalty applies.',
+       url:'https://www.idfcfirstbank.com/personal-banking/deposits/fixed-deposit', last_verified:'2026-03-22'},
+      {id:'in-scss', provider:'Post Office / Authorised Banks (SBI, HDFC etc.)', product:'Senior Citizens Savings Scheme (SCSS)',
+       category:'government_scheme', rate_pa:8.20, rate_pa_senior:8.20,
+       min_amount:1000, max_amount:3000000, term_months:60,
+       liquidity:'low', risk:'very_low',
+       risk_note:'Government of India guarantee — highest possible safety. Best rate available for senior citizens. Not subject to bank failure risk.',
+       tax_treatment:'Interest taxable at slab rate. TDS if annual interest exceeds Rs 1 lakh. 80C deduction available under old tax regime.',
+       early_withdrawal:'1.5% penalty before 2 years, 1% penalty from 2-5 years.',
+       eligibility_note:'Only for individuals aged 60+ (55+ for VRS or retired defence personnel).',
+       url:'https://www.indiapost.gov.in/Financial/Pages/Content/SCSS.aspx', last_verified:'2026-03-22'},
+      {id:'in-ppf', provider:'Post Office / Authorised Banks', product:'Public Provident Fund (PPF)',
+       category:'government_scheme', rate_pa:7.10, rate_pa_senior:7.10,
+       min_amount:500, max_amount:150000, term_months:180,
+       liquidity:'low', risk:'very_low',
+       risk_note:'Government of India guarantee. EEE tax status — most tax-efficient instrument available. Max Rs 1.5 lakh/year.',
+       tax_treatment:'EEE status: contributions exempt under 80C (old regime), interest fully tax-free, maturity fully tax-free. For a 30% bracket taxpayer, 7.10% tax-free PPF beats a 10%+ FD after tax.',
+       early_withdrawal:'Partial withdrawal allowed after Year 7. Loan facility from Year 3.',
+       url:'https://www.indiapost.gov.in/Financial/Pages/Content/PPF.aspx', last_verified:'2026-03-22'},
+      {id:'in-tbill-364d', provider:'RBI / Government of India', product:'Treasury Bill 364-day',
+       category:'government_security', rate_pa:6.40, min_amount:25000, term_months:12,
+       liquidity:'medium', risk:'very_low',
+       risk_note:'Sovereign guarantee — Government of India. Zero default risk. Tradeable on secondary market.',
+       tax_treatment:'Discount gain taxed as STCG at slab rate. NO TDS — full amount compounds without drag. Tax payable only at annual filing. Key advantage over FDs for 30%+ bracket investors.',
+       early_withdrawal:'Tradeable on secondary market through registered broker.',
+       url:'https://www.rbi.org.in/', last_verified:'2026-03-22'},
+      {id:'in-mf-liquid', provider:'SBI MF / HDFC MF / ICICI Prudential MF', product:'Liquid Mutual Fund (Direct Growth)',
+       category:'debt_mutual_fund', rate_pa:7.00, min_amount:500, term_months:null,
+       liquidity:'very_high', risk:'low',
+       risk_note:'SEBI regulated. Invests in instruments maturing within 91 days. NAV fluctuates slightly but principal risk very low. Not DICGC insured.',
+       tax_treatment:'All gains at slab rate (post April 2023). NO TDS. Tax deferred until redemption — full compounding until you sell. Beats FDs over any horizon for 30%+ bracket investors due to compounding without tax drag.',
+       early_withdrawal:'T+1 redemption. No exit load after 7 days.',
+       url:'https://www.mutualfundssahihai.com/', last_verified:'2026-03-22'}
+    ],
+    loans: [
+      {id:'in-loan-sbi', provider:'State Bank of India (SBI)', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:11.45, rate_pa_max:14.85, rate_pa_typical:12.50,
+       fees:{processing:'1% of loan amount + GST (min Rs 1,000, max Rs 15,000)', prepayment:'Nil for floating rate'},
+       min_amount:25000, max_amount:2000000, min_term_months:6, max_term_months:72,
+       eligibility:'Salaried or self-employed. Net monthly income minimum Rs 15,000. Credit score 700+. Age 21-60.',
+       suitable_for_variable_income:true,
+       url:'https://sbi.co.in/web/personal-banking/loans/personal-loans', last_verified:'2026-03-22'},
+      {id:'in-loan-hdfc', provider:'HDFC Bank', product:'Personal Loan',
+       category:'personal_loan', rate_pa_min:10.50, rate_pa_max:21.00, rate_pa_typical:14.00,
+       fees:{processing:'Up to 2.5% of loan amount', prepayment:'2-4% of outstanding'},
+       min_amount:50000, max_amount:4000000, min_term_months:12, max_term_months:60,
+       eligibility:'Salaried individuals. Minimum net monthly income Rs 25,000. Age 21-60.',
+       suitable_for_variable_income:false,
+       url:'https://www.hdfcbank.com/personal/borrow/popular-loans/personal-loan', last_verified:'2026-03-22'}
+    ],
+    insurance: [
+      {id:'in-ins-term-lic', provider:'LIC India', product:'LIC Tech Term (online term plan)',
+       category:'term_life', indicative_annual_premium_30yo_1cr:8500, sum_assured_example:'Rs 1 Crore',
+       key_features:['Pure term plan — death benefit only, no maturity value','Online purchase at licindia.in','Government-backed — highest claim settlement ratio in India (~99%)','30-year term available'],
+       eligibility:'Age 18-65. Minimum sum assured Rs 50 lakh.',
+       note:'Indicative premium for 30-year-old non-smoker, Rs 1 Crore sum assured, 30-year term. Actual premium calculated at lic.gov.in.',
+       url:'https://licindia.in/products/term-insurance/lic-tech-term', last_verified:'2026-03-22'},
+      {id:'in-ins-health-star', provider:'Star Health Insurance', product:'Star Comprehensive Health Insurance',
+       category:'health_insurance', indicative_annual_premium_30yo:12000, indicative_annual_premium_40yo:18000,
+       coverage_typical:'Rs 5 lakh to Rs 1 crore',
+       key_features:['Cashless hospitalisation at 14,000+ hospitals','Pre-hospitalisation (60 days) and post-hospitalisation (90 days)','Day care procedures covered','No-claim bonus up to 100% of sum insured','Section 80D tax deduction on premiums'],
+       eligibility:'Age 18-75. Lifelong renewal. Medical underwriting for older ages.',
+       note:'India largest standalone health insurer. 80D deduction: up to Rs 25,000 (Rs 50,000 for seniors). Premium varies by age, city, family size.',
+       url:'https://www.starhealth.in/', last_verified:'2026-03-22'}
+    ]
+  }
+};
+
+/* ╔══════════════════════════════════════════════╗
+   ║  HEADLINE ROTATOR                            ║
+   ╚══════════════════════════════════════════════╝ */
+(function(){
+  var els=document.querySelectorAll('.hl');
+  var cur=0;
+  function setTexts(){
+    var phrases=T[G.country].hlPhrases;
+    els.forEach(function(el,i){if(phrases[i])el.innerHTML=phrases[i];});
+  }
+  setTexts();
+  setInterval(function(){
+    els[cur].classList.remove('in');els[cur].classList.add('out');
+    var p=cur;setTimeout(function(){els[p].classList.remove('out');},620);
+    cur=(cur+1)%els.length;
+    setTexts();
+    els[cur].classList.add('in');
+  },3000);
+})();
+
+document.getElementById('pgLand').classList.add('on');
+
+/* ╔══════════════════════════════════════════════╗
+   ║  I18N APPLY                                  ║
+   ╚══════════════════════════════════════════════╝ */
+function applyI18N(){
+  var t=T[G.country];
+  var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+  s('landSub',t.landSub); s('landDisc',t.landDisc);
+  s('li1',t.li1); s('ls1',t.ls1); s('li2',t.li2); s('ls2',t.ls2);
+  s('li3',t.li3); s('ls3',t.ls3); s('li4',t.li4); s('ls4',t.ls4);
+  s('spTitle',t.spTitle); s('spProfLabel',t.spProfLabel); s('spSigTitle',t.spSigTitle);
+  s('nextBtnTxt',t.nextBtn); s('voiceBtnTxt',t.voiceBtn); s('skipBtn',t.skipBtn);
+  s('loTxt',t.loTxt); s('loSub',t.loSub); s('qNote',t.qNote);
+  s('extractingTxt',t.extractingTxt);
+  document.getElementById('htmlRoot').lang=G.country==='IN'?'hi':'en';
+}
+
+/* ╔══════════════════════════════════════════════╗
+   ║  NAV                                         ║
+   ╚══════════════════════════════════════════════╝ */
+function show(id){
+  ['pgLand','pgIntake','pgRes'].forEach(function(s){document.getElementById(s).classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+}
+function goHome(){
+  stopTts(); stopVoice();
+  G.intent=null; G.profile={}; G.signals=[]; G.questions=[];
+  G.qIdx=0; G.committed=[]; G.busy=false; G.fullResult=null;
+  document.getElementById('committedStrip').innerHTML='';
+  document.getElementById('qTa').value='';
+  document.getElementById('loadingOverlay').classList.remove('on');
+  document.getElementById('restBtn').style.display='none';
+  renderSidePanel();
+  show('pgLand');
+}
+function backToIntake(){stopTts();show('pgIntake');}
+function onCountry(v){G.country=v;applyI18N();}
+
+/* ╔══════════════════════════════════════════════╗
+   ║  START FLOW                                  ║
+   ╚══════════════════════════════════════════════╝ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   STASHWISE INTAKE ENGINE v3
+   Claude drives the entire conversation.
+   No fixed question list - Claude decides what to ask next
+   based on what it knows and what's still missing.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── State ── */
+var _placeholderTimer = null;
+var _questionCount = 0;
+var MAX_QUESTIONS = 10; // Claude can ask up to this many before we offer to analyse
+
+/* ── startFlow ── */
+function startFlow(intent) {
+  G.intent = intent;
+  G.profile = {};
+  G.signals = [];
+  G.committed = [];
+  G.history = [];       // [{role,content}] for the interviewer Claude
+  G.questionCount = 0;
+  G.busy = false;
+  G.fullResult = null;
+  document.getElementById('committedStrip').innerHTML = '';
+  document.getElementById('qTa').value = '';
+  document.getElementById('restBtn').style.display = 'inline-block';
+  document.getElementById('loadingOverlay').classList.remove('on');
+  document.getElementById('spCta').style.display = 'none';
+  applyI18N();
+  renderSidePanel();
+  show('pgIntake');
+  askClaude('__OPEN__', null);
+}
+
+/* ── Claude asks the next question ── */
+function askClaude(userAnswer, userSummary) {
+  G.busy = true;
+  setBusy(true);
+  document.getElementById('taExtracting').classList.add('on');
+  document.getElementById('extractingTxt').textContent = userAnswer === '__OPEN__' ? 'Starting...' : 'Thinking...';
+
+  // If this is a real answer, add it to history and committed strip
+  if (userAnswer !== '__OPEN__' && userAnswer) {
+    G.history.push({ role: 'user', content: userAnswer });
+    if (userSummary) addCommittedItem(userSummary);
+    G.questionCount++;
+  }
+
+  var systemPrompt = buildInterviewerPrompt();
+  var messages = buildInterviewerMessages(userAnswer);
+
+  fetch(API_BASE + '/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 500,
+      system: systemPrompt,
+      messages: messages
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.error && e.error.message ? e.error.message : 'HTTP ' + r.status); });
+    return r.json();
+  })
+  .then(function(data) {
+    var raw = data.content.map(function(b) { return b.text || ''; }).join('');
+    var parsed;
+    try {
+      var clean = raw.replace(/```json|```/g, '').trim();
+      var fi = clean.indexOf('{'); var li = clean.lastIndexOf('}');
+      parsed = JSON.parse(clean.slice(fi, li + 1));
+    } catch(e) {
+      // fallback if Claude returned malformed JSON
+      parsed = { question: raw.trim(), examples: [], label: 'Q' + (G.questionCount + 1), ready: false, extracted: {} };
+    }
+
+    // Merge any extracted fields Claude spotted
+    if (parsed.extracted) {
+      Object.keys(parsed.extracted).forEach(function(k) {
+        if (parsed.extracted[k] !== null && parsed.extracted[k] !== '') {
+          G.profile[k] = parsed.extracted[k];
+          G._lastKey = k;
+        }
+      });
+    }
+
+    // Update signals
+    if (parsed.signals && parsed.signals.length) {
+      parsed.signals.forEach(function(s) {
+        if (G.signals.indexOf(s) < 0) G.signals.push(s);
+      });
+    }
+
+    // Add Claude's question to history
+    G.history.push({ role: 'assistant', content: parsed.question });
+
+    G.busy = false;
+    setBusy(false);
+    document.getElementById('taExtracting').classList.remove('on');
+
+    renderSidePanel();
+
+    if (parsed.ready || G.questionCount >= MAX_QUESTIONS) {
+      // Claude says it has enough - show CTA prominently
+      renderFinalPrompt(parsed.question, parsed.examples || []);
+    } else {
+      renderNextQuestion(parsed.question, parsed.examples || [], parsed.label || ('Q' + (G.questionCount + 1)));
+    }
+  })
+  .catch(function(err) {
+    G.busy = false;
+    setBusy(false);
+    document.getElementById('taExtracting').classList.remove('on');
+    showQuestionError(err.message);
+  });
+}
+
+/* ── Build the interviewer system prompt ── */
+function buildInterviewerPrompt() {
+  var country = G.country === 'NZ' ? 'New Zealand' : 'India';
+  var currency = G.country === 'NZ' ? 'NZD ($)' : 'INR (Rs./lakhs)';
+  var intent = G.intent;
+  var fields = FIELDS[intent] || FIELDS.general;
+  var missing = fields.filter(function(f) { return !G.profile[f.key]; }).map(function(f) { return f.key; });
+  var filled = fields.filter(function(f) { return G.profile[f.key]; }).map(function(f) { return f.key + ': ' + G.profile[f.key]; });
+
+  return 'You are a sharp, empathetic financial intake specialist for Stashwise in ' + country + '. ' +
+    'You are having a conversation to build a complete financial profile for a ' + intent + ' recommendation.\n\n' +
+    'YOUR JOB: Ask ONE focused question at a time. But be intelligent about it:\n' +
+    '- Read between the lines. Infer what you can.\n' +
+    '- If someone says "I am a nurse, just started my first real job" - infer: likely 23-28, likely $60-75k NZD, likely no existing investments, likely needs basics explained\n' +
+    '- Ask follow-ups that probe ambiguity or red flags, not just checklist items\n' +
+    '- Match their language register - if they are casual, be casual. If technical, be technical.\n' +
+    '- Notice financial red flags and probe them (e.g. "I have a lot of debt" - ask about it)\n' +
+    '- If income is variable or unusual, understand it properly\n' +
+    '- For borrowing: you MUST understand affordability - income, expenses, existing debt\n' +
+    '- For investing: you MUST understand tax situation - it changes which product wins\n' +
+    '- Skip questions where you can reasonably infer the answer from context\n\n' +
+    'FIELDS STILL NEEDED: ' + missing.join(', ') + '\n' +
+    'FIELDS ALREADY KNOWN: ' + (filled.length ? filled.join('; ') : 'none yet') + '\n\n' +
+    'RETURN ONLY THIS JSON (no other text):\n' +
+    '{\n' +
+    '  "question": "Your next question as a natural, warm sentence. If you have enough info, make this a friendly confirmation like \'I think I have enough to work with - want me to run your numbers now?\'",\n' +
+    '  "label": "2-3 word label for what this question is about e.g. \'Monthly income\' or \'Risk tolerance\'",\n' +
+    '  "examples": ["example answer 1 (realistic, specific, in local currency)", "example 2", "example 3"],\n' +
+    '  "extracted": {' + fields.map(function(f) { return '"' + f.key + '": null'; }).join(', ') + '},\n' +
+    '  "signals": ["any notable financial signal worth showing the user, e.g. \'High debt-to-income ratio noted\'"],\n' +
+    '  "ready": false\n' +
+    '}\n\n' +
+    'Set "ready": true ONLY when you have: ' + getReadyCondition(intent) + '\n\n' +
+    'Currency: ' + currency + '\n' +
+    'IMPORTANT: examples must be specific and realistic for ' + country + '. Use actual numbers. Show the messy real-world answers too (e.g. "not sure exactly, maybe $40-50k"). Never use vague placeholders.';
+}
+
+function getReadyCondition(intent) {
+  var conditions = {
+    invest: 'amount + timeline + risk preference + tax/PIR rate (or confirmed unknown)',
+    borrow: 'loan amount + purpose + monthly income + monthly expenses',
+    insure: 'cover type needed + income + whether they have dependants',
+    general: 'rough amount + goal + timeline + risk preference'
+  };
+  return conditions[intent] || 'enough info to give a meaningful recommendation';
+}
+
+function buildInterviewerMessages(userAnswer) {
+  // For the opening, just send a starter message
+  if (userAnswer === '__OPEN__') {
+    var intentDesc = {
+      invest: 'help them invest or park their money safely',
+      borrow: 'help them find the right loan',
+      insure: 'help them understand what insurance they need',
+      general: 'help them figure out their financial priorities'
+    }[G.intent] || 'give them financial guidance';
+    return [{ role: 'user', content: 'Start the conversation. The user wants to ' + intentDesc + '. Ask your first question.' }];
+  }
+
+  // Otherwise send the full conversation history
+  return G.history.slice();
+}
+
+/* ── Render the current question ── */
+function renderNextQuestion(question, examples, label) {
+  var pct = Math.min(95, Math.round((G.questionCount / MAX_QUESTIONS) * 100));
+  document.getElementById('ipFill').style.width = pct + '%';
+  document.getElementById('qStepLabel').textContent = label;
+  document.getElementById('qText').textContent = question;
+  document.getElementById('qSubtext').textContent = '';
+  document.getElementById('qTa').value = '';
+  document.getElementById('qTa').disabled = false;
+  document.getElementById('nextBtn').textContent = T[G.country].nextBtn;
+  document.getElementById('nextBtn').onclick = submitAnswer;
+
+  var wrap = document.getElementById('qExamples');
+  wrap.innerHTML = examples.map(function(ex) {
+    return '<div class="eg" onclick="useExample(this)">' + escH(ex) + '</div>';
+  }).join('');
+
+  startPlaceholderCycle(examples);
+  setTimeout(function() { document.getElementById('qTa').focus(); }, 150);
+}
+
+/* ── Final prompt when Claude has enough ── */
+function renderFinalPrompt(question, examples) {
+  document.getElementById('ipFill').style.width = '100%';
+  document.getElementById('qStepLabel').textContent = G.country === 'IN' ? 'Taiyar hai!' : 'Ready';
+  document.getElementById('qText').textContent = question;
+  document.getElementById('qSubtext').textContent = '';
+  document.getElementById('qTa').value = '';
+  document.getElementById('qTa').disabled = false;
+
+  var wrap = document.getElementById('qExamples');
+  wrap.innerHTML = examples.map(function(ex) {
+    return '<div class="eg" onclick="useExample(this)">' + escH(ex) + '</div>';
+  }).join('');
+
+  // Change button to "Get my recommendation"
+  document.getElementById('nextBtn').textContent = G.country === 'IN' ? 'Results dekho' : 'Get my recommendation';
+  document.getElementById('nextBtn').onclick = function() {
+    var text = document.getElementById('qTa').value.trim();
+    if (text) {
+      G.history.push({ role: 'user', content: text });
+      addCommittedItem(text.length > 60 ? text.slice(0, 60) + '...' : text);
+    }
+    triggerAnalysis();
+  };
+
+  // Also show panel CTA
+  document.getElementById('spCta').style.display = 'block';
+  document.getElementById('spCta').disabled = false;
+
+  startPlaceholderCycle(examples);
+  setTimeout(function() { document.getElementById('qTa').focus(); }, 150);
+}
+
+function setBusy(v) {
+  document.getElementById('qTa').disabled = v;
+  document.getElementById('nextBtn').disabled = v;
+  document.getElementById('voiceBtn').disabled = v;
+}
+
+function showQuestionError(msg) {
+  document.getElementById('qStepLabel').textContent = 'Error';
+  document.getElementById('qText').textContent = 'Something went wrong: ' + msg;
+  document.getElementById('qSubtext').textContent = 'Check your API key at the top of index.html';
+  document.getElementById('qTa').disabled = false;
+}
+
+function startPlaceholderCycle(examples) {
+  clearInterval(_placeholderTimer);
+  if (!examples || !examples.length) { document.getElementById('qTa').placeholder = ''; return; }
+  var i = 0;
+  function set() { if (!document.getElementById('qTa').value) { document.getElementById('qTa').placeholder = examples[i % examples.length]; i++; } }
+  set();
+  _placeholderTimer = setInterval(set, 3500);
+}
+
+function useExample(el) {
+  var ta = document.getElementById('qTa');
+  ta.value = el.textContent;
+  ta.focus();
+}
+
+function onTaInput() { /* live typing - no debounce needed, Claude handles extraction */ }
+function onTaKey(e) { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); submitAnswer(); } }
+
+function addCommittedItem(text) {
+  var strip = document.getElementById('committedStrip');
+  var el = document.createElement('div');
+  el.className = 'committed-item';
+  el.innerHTML = '<span class="ci-value">' + escH(text) + '</span>';
+  strip.appendChild(el);
+}
+
+/* ── Submit answer to Claude ── */
+function submitAnswer() {
+  if (G.busy) return;
+  var text = document.getElementById('qTa').value.trim();
+  if (!text) { document.getElementById('qTa').focus(); return; }
+  clearInterval(_placeholderTimer);
+
+  // Quick client-side extract for instant panel update
+  quickExtract(text);
+
+  // Then ask Claude what to ask next (passing user's answer)
+  askClaude(text, null);
+}
+
+function skipQuestion() {
+  clearInterval(_placeholderTimer);
+  G.questionCount++;
+  if (G.questionCount >= MAX_QUESTIONS) {
+    triggerAnalysis();
+  } else {
+    G.history.push({ role: 'user', content: '(skipped)' });
+    askClaude('(skipped - user skipped this question)', null);
+  }
+}
+
+/* ── Quick regex extract for live panel (no API) ── */
+function quickExtract(text) {
+  var p = G.profile;
+  var t = text.toLowerCase();
+  var c = G.country;
+
+  if (c === 'NZ') {
+    var m = text.match(/\$\s*([\d,]+(?:\.\d+)?)\s*k?\b/i);
+    if (m) { var n = parseFloat(m[1].replace(/,/g, '')); if (/\$[\d,]+k/i.test(text)) n *= 1000; p.amount = '$' + Math.round(n).toLocaleString(); }
+  } else {
+    var mL = text.match(/([\d.]+)\s*lakh/i); var mC = text.match(/([\d.]+)\s*crore/i); var mR = text.match(/(?:rs\.?|\u20b9)\s*([\d,]+)/i);
+    if (mC) p.amount = '\u20b9' + Math.round(parseFloat(mC[1]) * 10000000).toLocaleString();
+    else if (mL) p.amount = '\u20b9' + Math.round(parseFloat(mL[1]) * 100000).toLocaleString();
+    else if (mR) p.amount = '\u20b9' + parseInt(mR[1].replace(/,/g, '')).toLocaleString();
+  }
+  var tY = text.match(/(\d+)\s*(?:year|yr)/i); var tM = text.match(/(\d+)\s*(?:month|mo)/i);
+  if (tY) p.timeline = tY[1] + ' year' + (tY[1] !== '1' ? 's' : '');
+  else if (tM) p.timeline = tM[1] + ' month' + (tM[1] !== '1' ? 's' : '');
+  if (/(self.?employ|freelan)/i.test(t)) p.employment = 'Self-employed';
+  else if (/(salary|salaried|permanent)/i.test(t)) p.employment = 'Salaried';
+  else if (/(casual|part.?time)/i.test(t)) p.employment = 'Part-time';
+  else if (/retir/i.test(t)) p.employment = 'Retired';
+  if (/(safe|conserv|no risk|govt.?only)/i.test(t)) p.risk = 'Conservative';
+  else if (/moderate/i.test(t)) p.risk = 'Moderate';
+  else if (/(highest|maximum|best rate)/i.test(t)) p.risk = 'Growth';
+  if (c === 'NZ') { var mP = text.match(/(10\.5|17\.5|28|33)\s*%/); if (mP) p.taxRate = mP[1] + '% PIR'; }
+  else { if (/(30%|31\.2)/i.test(t)) p.taxRate = '31.2%'; else if (/(20%|20\.8)/i.test(t)) p.taxRate = '20.8%'; }
+  if (/(car|vehicle)/i.test(t)) p.purpose = 'Car';
+  else if (/consolidat/i.test(t)) p.purpose = 'Debt consolidation';
+  else if (/business/i.test(t)) p.purpose = 'Business';
+  else if (/renovation/i.test(t)) p.purpose = 'Home improvement';
+  if (/(life|term insurance)/i.test(t)) p.coverType = 'Life / Term';
+  else if (/income.?prot/i.test(t)) p.coverType = 'Income protection';
+  else if (/(health|medical cover)/i.test(t)) p.coverType = 'Health';
+  if (/(family|kids|children|depend)/i.test(t)) p.life = 'Has dependants';
+  if (/lock.?away|won.?t need/i.test(t)) p.liquidity = 'Can lock away';
+  else if (/emergency|need.?access/i.test(t)) p.liquidity = 'Needs access';
+
+  renderSidePanel();
+}
+
+/* ── Trigger final analysis (Sonnet) ── */
+function triggerAnalysis() {
+  if (G.busy) return;
+  G.busy = true;
+  document.getElementById('spCta').disabled = true;
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('loadingOverlay').classList.add('on');
+  clearInterval(_placeholderTimer);
+
+  var systemPrompt = buildFinalSystemPrompt();
+  var userMsg = buildFinalUserMsg();
+
+  fetch(API_BASE + '/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2500,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  })
+  .then(function(r) { if (!r.ok) return r.json().then(function(e) { throw new Error(e.error && e.error.message ? e.error.message : 'HTTP ' + r.status); }); return r.json(); })
+  .then(function(data) {
+    var raw = data.content.map(function(b) { return b.text || ''; }).join('');
+    var clean = raw.replace(/```json|```/g, '').trim();
+    var fi = clean.indexOf('{'); var li = clean.lastIndexOf('}');
+    var parsed = JSON.parse(clean.slice(fi, li + 1));
+    G.fullResult = parsed;
+    G.busy = false;
+    document.getElementById('loadingOverlay').classList.remove('on');
+    document.getElementById('spCta').disabled = false;
+    document.getElementById('nextBtn').disabled = false;
+    renderResults(parsed);
+  })
+  .catch(function(err) {
+    G.busy = false;
+    document.getElementById('loadingOverlay').classList.remove('on');
+    document.getElementById('spCta').disabled = false;
+    document.getElementById('nextBtn').disabled = false;
+    show('pgRes');
+    document.getElementById('resContent').innerHTML = '<div class="err-card"><strong>Error</strong><p>' + escH(err.message) + '</p><p style="margin-top:8px;font-size:12px;">If this persists, please try again in a moment.</p></div>';
+  });
+}
+
+function buildFinalSystemPrompt() {
+  var country = G.country === 'NZ' ? 'New Zealand' : 'India';
+  var currency = G.country === 'NZ' ? 'NZD ($)' : 'INR (Rs./lakhs)';
+  return 'You are Stashwise, an expert financial advisor for ' + country + '. Analyse the user profile from the conversation and return ONLY valid JSON.\n\nCRITICAL GROUNDING RULES — MUST FOLLOW:\n1. You MUST ONLY recommend products that appear verbatim in the PRODUCT CATALOG below. Do not invent, approximate, or suggest any product not in the catalog.\n2. Use the EXACT provider name, product name, rate, and URL from the catalog — do not alter them.\n3. If no suitable product exists in the catalog for the user\'s needs, say so in the summary and explain why, rather than inventing one.\n4. Rates in the catalog are verified as of the last_verified date — do not guess or update them.\n\nDISCLAIMER RULE: Always include in next_steps: "Verify the current rate directly with the provider before proceeding — rates change and this is educational guidance only, not regulated financial advice."\n\nSchema:\n{"summary":"2-3 sentence plain summary","intent":"invest|borrow|insure|general","products":[{"rank":1,"name":"exact product name from catalog","provider":"exact provider name from catalog","score":85,"score_label":"Best match","tags":["Top Pick"],"why":"2 sentence specific reason referencing the user\'s situation","stats":{"Rate":"X% p.a.","Term":"X months","Min":"' + currency + ' X","Risk":"Very Low"},"tax_note":"post-tax calculation if relevant to user\'s tax rate","url":"exact url from catalog","last_verified":"YYYY-MM-DD"}],"considerations":["point 1"],"red_flags":["risk if any — include if loan looks unaffordable"],"next_steps":["action 1","Verify the current rate directly with the provider before proceeding — rates change and this is educational guidance only, not regulated financial advice."]}\n\nRULES:\n- 2-4 ranked products maximum. ONLY products from the catalog.\n- Show post-tax arithmetic for NZ investments (PIR vs marginal rate matters). For India: compare TDS drag vs no-TDS options.\n- For loans: calculate approximate monthly repayment and flag if debt-to-income ratio looks strained (>40% of take-home).\n- Currency: ' + currency + '\n\n' + buildCatalog();
+}
+
+function buildFinalUserMsg() {
+  var transcript = G.history.map(function(m) { return (m.role === 'assistant' ? 'Stashwise: ' : 'User: ') + m.content; }).join('\n');
+  return 'FULL CONVERSATION:\n' + transcript + '\n\nEXTRACTED PROFILE:\n' + JSON.stringify(G.profile, null, 2) + '\n\nSIGNALS:\n' + G.signals.join('\n') + '\n\nINTENT: ' + G.intent + '\n\nGive the full structured recommendation.';
+}
+
+function buildCatalog() {
+  var data = PRODUCTS[G.country];
+  if (!data) return '';
+  var lines = ['PRODUCT CATALOG (use ONLY these - exact names and rates):\n'];
+  var intent = G.intent;
+  if (intent === 'invest' || intent === 'general') {
+    lines.push('INVESTMENTS:');
+    (data.investments || []).forEach(function(p) {
+      lines.push('  ' + p.provider + ' | ' + p.product + ' | ' + p.rate_pa + '% p.a. | risk:' + p.risk + ' | liquidity:' + p.liquidity + ' | min:' + p.min_amount + (p.max_amount ? ' max:' + p.max_amount : '') + ' | tax:"' + p.tax_treatment + '" | ' + p.url + ' | verified:' + p.last_verified + (p.eligibility_note ? ' | NOTE:' + p.eligibility_note : ''));
+    });
+  }
+  if (intent === 'borrow' || intent === 'general') {
+    lines.push('\nLOANS:');
+    (data.loans || []).forEach(function(p) {
+      lines.push('  ' + p.provider + ' | ' + p.product + ' | ' + p.rate_pa_min + '-' + p.rate_pa_max + '% (typical ' + p.rate_pa_typical + '%) | min:' + p.min_amount + ' max:' + p.max_amount + ' | "' + p.eligibility + '" | ' + p.url + ' | verified:' + p.last_verified);
+    });
+  }
+  if (intent === 'insure' || intent === 'general') {
+    lines.push('\nINSURANCE:');
+    (data.insurance || []).forEach(function(p) {
+      lines.push('  ' + p.provider + ' | ' + p.product + ' | ' + JSON.stringify(p.key_features) + ' | ' + p.url + ' | verified:' + p.last_verified);
+    });
+  }
+  return lines.join('\n') + '\n\n';
+}
+
+/* ── Render results ── */
+function renderResults(data) {
+  var t = T[G.country];
+  document.getElementById('resLabel').textContent = t.resLabels[data.intent || G.intent || 'general'] || 'Assessment';
+  show('pgRes');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  var html = '';
+
+  html += '<div class="res-summary"><div class="res-sum-label">Summary</div><div class="res-sum-text">' + escH(data.summary || '') + '</div></div>';
+
+  if (data.red_flags && data.red_flags.length) {
+    html += '<div class="red-card"><div class="red-title">Important - please read</div>';
+    data.red_flags.forEach(function(f) { html += '<div class="red-item"><span style="color:var(--red);flex-shrink:0">&#9888;</span><span>' + escH(f) + '</span></div>'; });
+    html += '</div>';
+  }
+
+  if (data.products && data.products.length) {
+    html += '<div class="res-sec-title">Recommended options</div><div class="prod-list">';
+    data.products.forEach(function(p, i) {
+      var top = i === 0;
+      var tagClasses = { 'Top Pick': 't0', 'Tax Efficient': 't0', 'Government Backed': 't0', 'Very Low Risk': 't1', 'Low Risk': 't1', 'Most Flexible': 't2', 'Highest Rate': 't2', 'Moderate Risk': 't3', 'Seniors Only': 't1' };
+      html += '<div class="prod-card' + (top ? ' best-pick' : '') + '"><div class="pc-hd">';
+      html += '<div class="pc-rank">' + (top ? '&#9733;' : p.rank) + '</div>';
+      html += '<div class="pc-meta"><div class="pc-name">' + escH(p.name) + '</div><div class="pc-prov">' + escH(p.provider) + '</div>';
+      if (p.tags && p.tags.length) {
+        html += '<div class="pc-tags">';
+        p.tags.forEach(function(tag) { html += '<span class="pctag ' + (tagClasses[tag] || 't1') + '">' + escH(tag) + '</span>'; });
+        html += '</div>';
+      }
+      html += '</div><div class="pc-score"><div class="pc-score-n">' + Math.round(p.score || 0) + '</div><div class="pc-score-l">' + escH(p.score_label || 'Match') + '</div></div></div>';
+      html += '<div class="pc-body">';
+      if (p.why) html += '<div class="pc-why">' + escH(p.why) + '</div>';
+      if (p.stats && Object.keys(p.stats).length) {
+        html += '<div class="pc-stats">';
+        Object.keys(p.stats).forEach(function(k) { html += '<div><div class="pc-sk">' + escH(k) + '</div><div class="pc-sv">' + escH(p.stats[k]) + '</div></div>'; });
+        html += '</div>';
+      }
+      if (p.tax_note) html += '<div class="pc-tax">&#128200; ' + escH(p.tax_note) + '</div>';
+      html += '<div class="pc-foot">';
+      if (p.url) html += '<a class="pc-link" href="' + escA(p.url) + '" target="_blank" rel="noopener">View at ' + escH(p.provider) + ' &#8250;</a>';
+      if (p.last_verified) html += '<span class="pc-ver">Verified ' + escH(p.last_verified) + '</span>';
+      html += '</div></div></div>';
+    });
+    html += '</div>';
+  }
+
+  if (data.considerations && data.considerations.length) {
+    html += '<div class="cons-card"><div class="cons-title">Key considerations</div><div class="cons-list">';
+    data.considerations.forEach(function(c) { html += '<div class="cons-item"><span class="cons-dot gold"></span><span>' + escH(c) + '</span></div>'; });
+    html += '</div></div>';
+  }
+
+  if (data.next_steps && data.next_steps.length) {
+    html += '<div class="cons-card"><div class="cons-title">Next steps</div><div class="cons-list">';
+    data.next_steps.forEach(function(c) { html += '<div class="cons-item"><span class="cons-dot teal"></span><span>' + escH(c) + '</span></div>'; });
+    html += '</div></div>';
+  }
+
+  html += '<div class="disc">' + escH(t.disclaimer) + '</div>';
+  document.getElementById('resContent').innerHTML = html;
+}
+
+/* ── Side panel ── */
+function renderSidePanel() {
+  var fields = FIELDS[G.intent] || FIELDS.general;
+  var isHindi = G.country === 'IN';
+  var filled = 0;
+  var html = fields.map(function(f) {
+    var v = G.profile[f.key];
+    if (v) filled++;
+    var lbl = isHindi && f.hi ? f.hi : f.label;
+    return '<div class="sp-row"><span class="sp-k">' + escH(lbl) + '</span><span class="sp-v ' + (v ? 'set' : '') + '">' + escH(v || '--') + '</span></div>';
+  }).join('');
+  document.getElementById('spFields').innerHTML = html || '<div class="sp-empty">Your profile builds here.</div>';
+  var pct = fields.length ? Math.min(100, Math.round((filled / fields.length) * 100)) : 0;
+  document.getElementById('spFill').style.width = pct + '%';
+  document.getElementById('spPct').textContent = pct + '%';
+  var sigEl = document.getElementById('spSigs');
+  if (G.signals && G.signals.length) {
+    sigEl.style.display = 'block';
+    document.getElementById('spSigList').innerHTML = G.signals.map(function(s) {
+      return '<div class="sp-sig"><span class="sp-sig-dot"></span><span>' + escH(s) + '</span></div>';
+    }).join('');
+  } else { sigEl.style.display = 'none'; }
+}
+
+
+function toggleVoice(){
+  if(G.isRecording)stopVoice();
+  else startVoice();
+}
+
+function startVoice(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    alert('Microphone not available in this browser. Please type your answer instead.');return;
+  }
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    G.isRecording=true;G.audioChunks=[];
+    var btn=document.getElementById('voiceBtn');
+    btn.classList.add('rec');
+    document.getElementById('voiceBtnTxt').textContent=T[G.country].skipBtn==='Skip karo'?'Roko':'Stop';
+    document.getElementById('vStatus').classList.add('on');
+    document.getElementById('vStatusTxt').textContent=T[G.country].vStatusTxt;
+
+    var mime='audio/webm';
+    if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))mime='audio/webm;codecs=opus';
+    else if(MediaRecorder.isTypeSupported('audio/ogg;codecs=opus'))mime='audio/ogg;codecs=opus';
+    else if(MediaRecorder.isTypeSupported('audio/mp4'))mime='audio/mp4';
+
+    G.mediaRecorder=new MediaRecorder(stream,{mimeType:mime});
+    G.mediaRecorder.ondataavailable=function(e){if(e.data.size>0)G.audioChunks.push(e.data);};
+    G.mediaRecorder.onstop=function(){
+      stream.getTracks().forEach(function(t){t.stop();});
+      document.getElementById('vStatusTxt').textContent=T[G.country].vStatusDone;
+      var blob=new Blob(G.audioChunks,{type:mime});
+      transcribeAudio(blob,mime);
+    };
+    G.mediaRecorder.start(250);
+  }).catch(function(err){
+    alert('Microphone access denied: '+err.message);
+  });
+}
+
+function stopVoice(){
+  G.isRecording=false;
+  var btn=document.getElementById('voiceBtn');
+  btn.classList.remove('rec');
+  document.getElementById('voiceBtnTxt').textContent=T[G.country].voiceBtn;
+  if(G.mediaRecorder&&G.mediaRecorder.state!=='inactive')G.mediaRecorder.stop();
+}
+
+function transcribeAudio(blob,mime){
+  var ext=mime.indexOf('mp4')>=0?'mp4':mime.indexOf('ogg')>=0?'ogg':'webm';
+  var fd=new FormData();
+  fd.append('file',blob,'audio.'+ext);
+  fd.append('model_id','scribe_v1');
+  fd.append('language_code',G.country==='IN'?'hi':'en');
+
+  fetch(API_BASE + '/api/stt', {
+    method:'POST', body:fd
+  })
+  .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.detail||'STT error '+r.status);});return r.json();})
+  .then(function(d){
+    var text=d.text||(d.words&&d.words.map(function(w){return w.text;}).join(' '))||'';
+    if(text){
+      var ta=document.getElementById('qTa');
+      var cur=ta.value.trim();
+      ta.value=(cur?cur+' ':'')+text;
+      onTaInput();
+    }
+    document.getElementById('vStatus').classList.remove('on');
+  })
+  .catch(function(err){
+    document.getElementById('vStatus').classList.remove('on');
+    if(err.message.indexOf('401')>=0||err.message.indexOf('403')>=0)
+      alert('Voice service unavailable. You can still type your answer.');
+    else
+      alert('Transcription failed: '+err.message+'\n\nType your answer instead.');
+  });
+}
+
+/* ╔══════════════════════════════════════════════╗
+   ║  TTS  -  ElevenLabs                            ║
+   ╚══════════════════════════════════════════════╝ */
+function toggleTts(){
+  if(G.ttsActive)stopTts();
+  else if(G.fullResult)speakSummary();
+}
+function speakSummary(){
+  if(!G.fullResult)return;
+  var summary=G.fullResult.summary||'';
+  var top=G.fullResult.products&&G.fullResult.products[0];
+  var extra=top?'. Top option: '+top.name+' from '+top.provider+'. '+top.why:'';
+  speakText(summary+extra);
+}
+function speakText(text){
+  stopTts();
+  var clean=text.replace(/<[^>]+>/g,'').slice(0,700);
+  fetch(API_BASE + '/api/tts/' + ELEVENLABS_VOICE, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text:clean,model_id:'eleven_multilingual_v2',voice_settings:{stability:0.5,similarity_boost:0.8}})
+  })
+  .then(function(r){if(!r.ok)throw new Error('TTS '+r.status);return r.blob();})
+  .then(function(blob){
+    var url=URL.createObjectURL(blob);
+    G.ttsAudio=new Audio(url);G.ttsActive=true;
+    var btn=document.getElementById('resTts');
+    btn.classList.add('on');document.getElementById('resTtsTxt').textContent='Stop';
+    G.ttsAudio.onended=function(){G.ttsActive=false;btn.classList.remove('on');document.getElementById('resTtsTxt').textContent='Read aloud';};
+    G.ttsAudio.play();
+  })
+  .catch(function(e){console.warn('TTS:',e.message);G.ttsActive=false;});
+}
+function stopTts(){
+  if(G.ttsAudio){G.ttsAudio.pause();G.ttsAudio=null;}
+  G.ttsActive=false;
+  var btn=document.getElementById('resTts');
+  if(btn){btn.classList.remove('on');document.getElementById('resTtsTxt').textContent='Read aloud';}
+}
+
+/* ╔══════════════════════════════════════════════╗
+   ║  UTILS                                       ║
+   ╚══════════════════════════════════════════════╝ */
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escA(s){return String(s||'').replace(/"/g,'%22');}
+</script>
+</body>
+</html>

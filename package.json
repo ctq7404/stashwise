@@ -1,0 +1,13 @@
+{
+  "name": "stashwise",
+  "version": "1.0.0",
+  "description": "AI-powered financial product advisor – NZ and India",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
