@@ -17,21 +17,9 @@ const ELEVENLABS_KEY = process.env.ELEVENLABS_KEY  || '';
 if (!ANTHROPIC_KEY)  console.warn('[WARN] ANTHROPIC_KEY env var not set');
 if (!ELEVENLABS_KEY) console.warn('[WARN] ELEVENLABS_KEY env var not set');
 
-/* Work out where public/ is — try __dirname first, then cwd */
-const PUBLIC_DIR = (function() {
-  const candidates = [
-    path.resolve(__dirname, 'public'),
-    path.resolve(process.cwd(), 'public'),
-  ];
-  for (const d of candidates) {
-    if (fs.existsSync(d)) {
-      console.log('[Stashwise] Serving static files from:', d);
-      return d;
-    }
-  }
-  console.error('[ERROR] Could not find public/ directory. Checked:', candidates);
-  return candidates[0]; // fallback — will 404 gracefully
-})();
+/* Serve static files from the same directory as server.js (repo root) */
+const STATIC_DIR = __dirname;
+console.log('[Stashwise] Serving static files from:', STATIC_DIR);
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -173,22 +161,22 @@ const server = http.createServer((req, res) => {
 
   /* ── Static file serving ── */
   if (req.method === 'GET') {
-    /* Normalise: strip query string, default to index.html */
     let clean = pathname.split('?')[0];
+    /* Default to index.html */
     if (clean === '/' || clean === '') clean = 'index.html';
-    else clean = clean.replace(/^\//, ''); /* strip leading slash */
+    else clean = clean.replace(/^\/+/, ''); /* strip leading slashes */
 
-    const filePath = path.join(PUBLIC_DIR, clean);
-
-    /* Path traversal guard */
-    if (!path.resolve(filePath).startsWith(path.resolve(PUBLIC_DIR))) {
+    /* Block API paths and path traversal */
+    if (clean.startsWith('api/') || clean.includes('..')) {
       res.writeHead(403);
       return res.end('Forbidden');
     }
 
+    const filePath = path.join(STATIC_DIR, clean);
+
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        console.error('[404]', filePath, err.code);
+        console.error('[404]', filePath);
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         return res.end('Not found: ' + clean);
       }
@@ -205,8 +193,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('[Stashwise] Server running on port ' + PORT);
-  console.log('[Stashwise] PUBLIC_DIR:', PUBLIC_DIR);
-  console.log('[Stashwise] __dirname:', __dirname);
-  console.log('[Stashwise] cwd:', process.cwd());
+  console.log('[Stashwise] Listening on port', PORT);
 });
